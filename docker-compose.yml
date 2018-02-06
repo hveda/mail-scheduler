@@ -1,0 +1,46 @@
+version: '3'
+services:
+  app:
+    build: .
+    command: python -m flask run --host 0.0.0.0 --port 5000
+    container_name: Mail_Scheduler
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=serve.py
+      - FLASK_DEBUG=${FLASK_DEBUG}
+      - APP_SETTINGS=${APP_SETTINGS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+      - SECRET_KEY=${SECRET_KEY}
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/var/www/mail-scheduler
+  worker:
+    build: .
+    command: python -m flask rq worker
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=serve.py
+      - FLASK_DEBUG=${FLASK_DEBUG}
+      - APP_SETTINGS=${APP_SETTINGS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - .:/var/www/mail-scheduler
+  scheduler:
+    build: .
+    command: python -m flask rq scheduler
+    environment:
+      - FLASK_APP=serve.py
+    volumes:
+      - .:/var/www/mail-scheduler
+  postgres:
+    image: "postgres:alpine"
+  redis:
+    image: "redis:alpine"

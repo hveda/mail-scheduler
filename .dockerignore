@@ -1,0 +1,10 @@
+.circleci/
+.dockerignore
+.env
+.env.leave
+.git/
+.pep8
+app.json
+Dockerfile
+docker-compose.yml
+__pycache__/
