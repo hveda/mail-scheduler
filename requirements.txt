@@ -29,5 +29,5 @@ rq-scheduler==0.7.0
 six==1.11.0
 SQLAlchemy==1.3.0
 tzlocal==1.5.1
-Werkzeug==0.15.3
+Werkzeug==2.2.3
 WTForms==2.1
