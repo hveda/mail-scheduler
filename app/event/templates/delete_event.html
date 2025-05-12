@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Delete Scheduled Email</h1>
+        
+        <div class="alert alert-danger mb-4">
+            <p>Are you sure you want to delete this scheduled email?</p>
+            {% if not event.is_done %}
+            <p><strong>Warning:</strong> This email has not been sent yet. Deleting it will cancel the scheduled delivery.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Email Details</h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Subject:</dt>
+                    <dd class="col-sm-9">{{ event.email_subject }}</dd>
+                    
+                    <dt class="col-sm-3">Content:</dt>
+                    <dd class="col-sm-9">{{ event.email_content }}</dd>
+                    
+                    <dt class="col-sm-3">Scheduled Time:</dt>
+                    <dd class="col-sm-9">{{ event.timestamp.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    
+                    <dt class="col-sm-3">Status:</dt>
+                    <dd class="col-sm-9">
+                        {% if event.is_done %}
+                            <span class="badge bg-success">Sent</span>
+                            {% if event.done_at %}
+                                at {{ event.done_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        
+        <form method="POST" class="d-inline">
+            <button type="submit" class="btn btn-danger">Yes, Delete Email</button>
+            <a href="{{ url_for('items.all_events') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

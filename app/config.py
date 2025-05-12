@@ -16,13 +16,12 @@ class Config(object):
     POSTGRES_PASS = os.environ.get('DB_ENV_PASS', 'postgres')
     POSTGRES_DB = 'postgres'
 
-    SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
-        POSTGRES_USER,
-        POSTGRES_PASS,
-        POSTGRES_HOST,
-        POSTGRES_PORT,
-        POSTGRES_DB
-    ) or 'sqlite:///db.sqlite'
+    # Use SQLite for local development when PostgreSQL is not available
+    if os.environ.get('USE_SQLITE', '').lower() == 'true' or not os.path.exists('/var/run/postgresql'):
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+    else:
+        SQLALCHEMY_DATABASE_URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAIL_SERVER = 'smtp.gmail.com'
@@ -35,7 +34,7 @@ class Config(object):
 
     REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
     REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
-    RQ_REDIS_URL = 'redis://{}:{}'.format(REDIS_HOST, REDIS_PORT)
+    RQ_REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}'
     RQ_ASYNC = True
     RQ_SCHEDULER_INTERVAL = 10
 
@@ -67,3 +66,5 @@ class TestingConfig(Config):
 
     TESTING = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    RQ_ASYNC = False

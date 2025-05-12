@@ -1,0 +1,90 @@
+name: Scheduled Tests
+
+on:
+  schedule:
+    # Run weekly on Sunday at 1:00 AM UTC
+    - cron: '0 1 * * 0'
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  full-test-suite:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        python-version: [3.9, 3.11]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-cov
+        pip install markupsafe
+        pip install -e .
+    
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 app tests --count --statistics
+    
+    - name: Run comprehensive tests
+      env:
+        FLASK_APP: serve.py
+        FLASK_DEBUG: 1
+        APP_SETTINGS: TestingConfig
+        SECRET_KEY: test-secret-key
+        POSTGRES_HOST: localhost
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgres
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+      run: |
+        # Run the full test suite with coverage
+        pytest --cov=app --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+    
+    - name: Check for warnings and deprecation
+      run: |
+        # Run tests and capture all warnings
+        python -m pytest -xvs --no-header --no-summary -k "not slow" 2>&1 | grep -i "warning\|deprecated\|deprecation" || echo "No warnings found"
+      continue-on-error: true

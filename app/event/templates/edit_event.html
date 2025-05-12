@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Edit Scheduled Email</h1>
+        <form method="POST">
+            {{ form.csrf_token }}
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">{{ form.name.label }}</label>
+                {{ form.name(class="form-control", value=event.email_subject) }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="recipients" class="form-label">{{ form.recipients.label }}</label>
+                {{ form.recipients(class="form-control", placeholder="email1@example.com, email2@example.com") }}
+                <small class="form-text text-muted">{{ form.recipients.description }}</small>
+                {% if form.recipients.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.recipients.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="schedule_time" class="form-label">{{ form.schedule_time.label }}</label>
+                <input type="datetime-local" name="schedule_time" class="form-control" 
+                       id="schedule_time" required value="{{ event.timestamp.strftime('%Y-%m-%dT%H:%M') }}">
+                <small class="form-text text-muted">{{ form.schedule_time.description }}</small>
+                {% if form.schedule_time.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.schedule_time.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">{{ form.notes.label }}</label>
+                {{ form.notes(class="form-control", rows=5, value=event.email_content) }}
+                {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.notes.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if event.is_done %}
+            <div class="mb-3">
+                <div class="alert alert-warning">
+                    This email has already been sent. Editing will not affect the sent email.
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Update Email</button>
+                <a href="{{ url_for('items.all_events') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+# This is a CODEOWNERS file that defines individuals or teams responsible
+# for code in this repository. Code owners are automatically requested for
+# review when someone opens a pull request that modifies code they own.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @hveda
+
+# Web UI and routes
+/app/event/views.py @hveda
+/app/event/templates/ @hveda
+
+# API endpoints
+/app/api/ @hveda 
+
+# Database models
+/app/database/ @hveda
+
+# Backend services
+/app/services/ @hveda
+
+# Background jobs
+/app/event/jobs.py @hveda
+
+# Tests
+/tests/ @hveda
+
+# GitHub Actions workflows
+/.github/workflows/ @hveda
+
+# Docker configuration
+/Dockerfile* @hveda
+/docker-compose.yml @hveda
+/*-entrypoint.sh @hveda
+
+# Documentation
+/docs/ @hveda

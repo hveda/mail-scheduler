@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-form">
+    <h1>Register</h1>
+    <form action="{{ url_for('auth.register') }}" method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }}<br>
+            {{ form.username(size=32, class="form-control") }}
+            {% for error in form.username.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }}<br>
+            {{ form.email(size=32, class="form-control") }}
+            {% for error in form.email.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.first_name.label }}<br>
+            {{ form.first_name(size=32, class="form-control") }}
+            {% for error in form.first_name.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.last_name.label }}<br>
+            {{ form.last_name(size=32, class="form-control") }}
+            {% for error in form.last_name.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }}<br>
+            {{ form.password(size=32, class="form-control") }}
+            {% for error in form.password.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password2.label }}<br>
+            {{ form.password2(size=32, class="form-control") }}
+            {% for error in form.password2.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    <p>Already have an account? <a href="{{ url_for('auth.login') }}">Click to Sign In!</a></p>
+</div>
+{% endblock %}

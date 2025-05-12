@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>User Management</h1>
+    <a href="{{ url_for('items.all_events') }}" class="btn btn-secondary">Back to Events</a>
+    
+    <div class="users-table mt-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{% if user.is_active %}Active{% else %}Inactive{% endif %}</td>
+                    <td>{{ user.last_login or 'Never' }}</td>
+                    <td>
+                        <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

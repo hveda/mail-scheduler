@@ -1,15 +1,50 @@
-FROM python:3.6.4
+FROM python:3.11-slim
 
-MAINTAINER Heri Rusmanto "hvedaid@gmail.com"
+LABEL maintainer="Heri Rusmanto <hvedaid@gmail.com>"
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    APP_HOME=/var/www/mail-scheduler
 
 # Set working directory
-RUN mkdir -p /var/www/mail-scheduler
-WORKDIR /var/www/mail-scheduler
+WORKDIR $APP_HOME
 
-# Add requirements (to leverage Docker cache)
-ADD requirements.txt /var/www/mail-scheduler
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    redis-tools \
+    postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install requirements
-RUN pip install -r requirements.txt
+# Create a non-root user to run the application
+RUN groupadd -r appuser && useradd -r -g appuser -d $APP_HOME -s /bin/bash appuser \
+    && mkdir -p $APP_HOME \
+    && chown -R appuser:appuser $APP_HOME
 
-ADD . /var/www/mail-scheduler
+# Set up virtual environment
+RUN python -m venv $VIRTUAL_ENV
+
+# Install dependencies
+COPY --chown=appuser:appuser requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY --chown=appuser:appuser . .
+
+# Set permissions
+RUN chmod +x $APP_HOME/docker-entrypoint.sh
+
+# Switch to non-root user
+USER appuser
+
+# Entrypoint
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+# Default command
+CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0", "--port", "8080"]

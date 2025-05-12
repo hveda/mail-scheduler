@@ -1,0 +1,161 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install flake8 black isort mypy
+
+    - name: Check code style with flake8
+      run: |
+        flake8 app tests --count --statistics
+
+    - name: Check imports with isort
+      run: |
+        isort --check-only --profile black app tests
+      continue-on-error: true
+
+    - name: Check formatting with Black
+      run: |
+        black --check app tests
+      continue-on-error: true
+
+    - name: Check types with mypy
+      run: |
+        mypy --ignore-missing-imports app/
+      continue-on-error: true
+      
+    - name: Check for deprecated Markup imports
+      run: |
+        grep -r "from flask import Markup" --include="*.py" app/ || echo "No deprecated Markup imports found!"
+        # Should return non-zero status if found (grep returns 0 if matches found, 1 if no matches)
+        ! grep -r "from flask import Markup" --include="*.py" app/
+      
+    - name: Check recipient model usage
+      run: |
+        python -c "
+import sys
+import ast
+import re
+
+problems_found = False
+
+def check_file(file_path):
+    global problems_found
+    try:
+        with open(file_path, 'r') as f:
+            file_content = f.read()
+            
+        # Simple pattern check for Recipient constructor with keyword args
+        if re.search(r'Recipient\(email_address=', file_content):
+            print(f'WARNING: Potential issue in {file_path}: Using email_address parameter in Recipient constructor')
+            problems_found = True
+            
+        # Parse the file with AST to check more precisely
+        try:
+            tree = ast.parse(file_content)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'Recipient':
+                    if any(kw.arg == 'email_address' for kw in node.keywords):
+                        print(f'ISSUE: In {file_path}: Using email_address parameter in Recipient constructor')
+                        problems_found = True
+        except SyntaxError:
+            print(f'Could not parse {file_path} as Python code')
+            
+    except Exception as e:
+        print(f'Error checking {file_path}: {e}')
+
+# Check main files where Recipient might be used
+check_file('app/event/jobs.py')
+check_file('app/event/services.py')
+check_file('app/event/views.py')
+
+if problems_found:
+    print('Issues found in Recipient usage!')
+    sys.exit(1)
+else:
+    print('No issues found in Recipient usage!')
+    sys.exit(0)
+        "
+
+  compatibility-tests:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    strategy:
+      matrix:
+        python-version: [3.9, 3.11]
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-cov
+        pip install markupsafe  # Ensure markupsafe is installed
+        pip install -e .
+    
+    - name: Run compatibility tests
+      env:
+        FLASK_APP: serve.py
+        FLASK_DEBUG: 1
+        APP_SETTINGS: TestingConfig
+        SECRET_KEY: test-secret-key
+        POSTGRES_HOST: localhost
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgres
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+      run: |
+        # Run specific tests related to fixes
+        pytest tests/event/test_views.py tests/event/test_jobs_comprehensive.py tests/test_app_init_enhanced.py -v
