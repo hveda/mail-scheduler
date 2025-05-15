@@ -48,9 +48,10 @@ class LoginView(MethodView):
             login_user(user, remember=form.remember_me.data)
             user.update_last_login()
 
-            next_page = request.args.get('next')
-            if not next_page or url_parse(next_page).netloc != '':
-                next_page = url_for('items.all_events')
+            next_page = request.args.get('next', '')
+            next_page = next_page.replace('\\', '')  # Remove backslashes
+            if not next_page or url_parse(next_page).netloc != '' or url_parse(next_page).scheme:
+                next_page = url_for('items.all_events')  # Default to a safe fallback
 
             return redirect(next_page)
 
