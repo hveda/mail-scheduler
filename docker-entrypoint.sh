@@ -25,7 +25,7 @@ wait_for_postgres() {
 if [ "$1" = "python" ]; then
   wait_for_redis
   wait_for_postgres
-  
+
   # Activate virtual environment (should already be in PATH but just to be explicit)
   echo "Activating virtual environment..."
   source $VIRTUAL_ENV/bin/activate

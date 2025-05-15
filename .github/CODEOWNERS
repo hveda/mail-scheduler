@@ -11,7 +11,7 @@
 /app/event/templates/ @hveda
 
 # API endpoints
-/app/api/ @hveda 
+/app/api/ @hveda
 
 # Database models
 /app/database/ @hveda

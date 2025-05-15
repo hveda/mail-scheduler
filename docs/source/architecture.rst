@@ -83,12 +83,12 @@ Models use property decorators for better encapsulation and validation:
    class Event(db.Model):
        # Database columns with underscore prefix for encapsulation
        _email_subject = db.Column('email_subject', db.String, nullable=False)
-       
+
        @property
        def email_subject(self) -> str:
            """Get the email subject."""
            return self._email_subject
-           
+
        @email_subject.setter
        def email_subject(self, value: str) -> None:
            """Set the email subject with validation."""
@@ -105,7 +105,7 @@ Flask routes use class-based views for better organization:
 
    class EventListView(MethodView):
        """Class-based view for listing all events."""
-       
+
        def get(self):
            """GET method to display all events."""
            events = EventService.get_all()

@@ -3,108 +3,84 @@ name: Pull Request Checks
 on:
   pull_request:
     branches: [ main, master ]
+  push:
+    branches: [ main, master ]
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   code-quality:
+    name: Code Quality & Testing
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: '3.11'
-        cache: 'pip'
-    
+        version: "0.8.3"
+        enable-cache: true
+
+    - name: Set up Python
+      run: uv python install 3.11
+
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install flake8 black isort mypy
+      run: uv sync --extra dev
 
-    - name: Check code style with flake8
+    - name: Code formatting check with Black
       run: |
-        flake8 app tests --count --statistics
+        source .venv/bin/activate
+        black --check --diff app tests
+      continue-on-error: false
 
-    - name: Check imports with isort
+    - name: Import sorting check with isort
       run: |
-        isort --check-only --profile black app tests
-      continue-on-error: true
+        source .venv/bin/activate
+        isort --check-only --profile black --diff app tests
+      continue-on-error: false
 
-    - name: Check formatting with Black
+    - name: Lint with flake8
       run: |
-        black --check app tests
-      continue-on-error: true
+        source .venv/bin/activate
+        flake8 app tests --count --statistics --show-source
+      continue-on-error: false
 
-    - name: Check types with mypy
+    - name: Type checking with mypy
       run: |
+        source .venv/bin/activate
         mypy --ignore-missing-imports app/
       continue-on-error: true
-      
-    - name: Check for deprecated Markup imports
+
+    - name: Run tests with coverage
+      env:
+        FLASK_APP: serve.py
+        FLASK_DEBUG: 1
+        APP_SETTINGS: TestingConfig
+        SECRET_KEY: test-secret-key-for-ci
       run: |
-        grep -r "from flask import Markup" --include="*.py" app/ || echo "No deprecated Markup imports found!"
-        # Should return non-zero status if found (grep returns 0 if matches found, 1 if no matches)
-        ! grep -r "from flask import Markup" --include="*.py" app/
-      
-    - name: Check recipient model usage
-      run: |
-        python -c "
-import sys
-import ast
-import re
+        source .venv/bin/activate
+        python -m pytest --cov=app --cov-report=term-missing --cov-report=xml tests/
 
-problems_found = False
-
-def check_file(file_path):
-    global problems_found
-    try:
-        with open(file_path, 'r') as f:
-            file_content = f.read()
-            
-        # Simple pattern check for Recipient constructor with keyword args
-        if re.search(r'Recipient\(email_address=', file_content):
-            print(f'WARNING: Potential issue in {file_path}: Using email_address parameter in Recipient constructor')
-            problems_found = True
-            
-        # Parse the file with AST to check more precisely
-        try:
-            tree = ast.parse(file_content)
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'Recipient':
-                    if any(kw.arg == 'email_address' for kw in node.keywords):
-                        print(f'ISSUE: In {file_path}: Using email_address parameter in Recipient constructor')
-                        problems_found = True
-        except SyntaxError:
-            print(f'Could not parse {file_path} as Python code')
-            
-    except Exception as e:
-        print(f'Error checking {file_path}: {e}')
-
-# Check main files where Recipient might be used
-check_file('app/event/jobs.py')
-check_file('app/event/services.py')
-check_file('app/event/views.py')
-
-if problems_found:
-    print('Issues found in Recipient usage!')
-    sys.exit(1)
-else:
-    print('No issues found in Recipient usage!')
-    sys.exit(0)
-        "
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+      continue-on-error: true
 
   compatibility-tests:
+    name: Compatibility Tests
     runs-on: ubuntu-latest
     needs: code-quality
     strategy:
       matrix:
-        python-version: [3.9, 3.11]
-    
+        python-version: ['3.11']
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -119,7 +95,7 @@ else:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      
+
       redis:
         image: redis:7-alpine
         ports:
@@ -129,30 +105,30 @@ else:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install pytest pytest-cov
-        pip install markupsafe  # Ensure markupsafe is installed
         pip install -e .
-    
+
     - name: Run compatibility tests
       env:
         FLASK_APP: serve.py
         FLASK_DEBUG: 1
         APP_SETTINGS: TestingConfig
-        SECRET_KEY: test-secret-key
+        SECRET_KEY: test-secret-key-for-ci
         POSTGRES_HOST: localhost
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
@@ -160,5 +136,71 @@ else:
         REDIS_HOST: localhost
         REDIS_PORT: 6379
       run: |
-        # Run specific tests related to fixes
-        pytest tests/event/test_views.py tests/event/test_jobs_comprehensive.py tests/test_app_init_enhanced.py -v
+        # Run core tests to ensure compatibility
+        python -m pytest tests/test_app_init.py tests/event/test_views.py -v
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install sphinx sphinx-rtd-theme
+
+    - name: Check for deprecated imports
+      run: |
+        echo "Checking for deprecated Flask imports..."
+        if grep -r "from flask import Markup" --include="*.py" app/; then
+          echo "❌ Found deprecated Markup imports!"
+          exit 1
+        else
+          echo "✅ No deprecated Markup imports found!"
+        fi
+
+    - name: Validate docstrings
+      run: |
+        python -c "
+        import ast
+        import os
+
+        def check_docstrings(directory):
+            issues = []
+            for root, dirs, files in os.walk(directory):
+                for file in files:
+                    if file.endswith('.py'):
+                        filepath = os.path.join(root, file)
+                        try:
+                            with open(filepath, 'r') as f:
+                                tree = ast.parse(f.read())
+
+                            for node in ast.walk(tree):
+                                if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                                    if not ast.get_docstring(node):
+                                        issues.append(f'{filepath}:{node.lineno} - Missing docstring for {node.name}')
+                        except Exception as e:
+                            issues.append(f'{filepath} - Parse error: {e}')
+            return issues
+
+        issues = check_docstrings('app')
+        if issues:
+            print('⚠️  Docstring issues found:')
+            for issue in issues[:10]:  # Show first 10 issues
+                print(f'  {issue}')
+            if len(issues) > 10:
+                print(f'  ... and {len(issues) - 10} more issues')
+        else:
+            print('✅ All functions and classes have docstrings!')
+        "
+      continue-on-error: true

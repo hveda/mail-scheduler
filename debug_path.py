@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # Print path information
 import sys
+
 print("Python path:", sys.path)
 print("Python version:", sys.version)
 
 # Try import
 try:
-    from app import create_app, config
+    from app import config, create_app
+
     print("Imports successful!")
 
     # Create app
@@ -20,4 +22,5 @@ try:
 except Exception as e:
     print(f"Error: {e}")
     import traceback
+
     traceback.print_exc()

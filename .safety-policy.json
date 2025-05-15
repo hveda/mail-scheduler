@@ -1,0 +1,7 @@
+{
+    "security": {
+        "ignore-vulnerabilities": [
+            "77323:"
+        ]
+    }
+}

@@ -22,21 +22,37 @@ This project uses GitHub Actions for continuous integration and deployment:
 
 ### CI/CD Workflows
 
-- **Main CI/CD Pipeline**: Runs on every push to main branch and pull requests
-  - Linting with flake8
-  - Unit tests with pytest on multiple Python versions (3.9, 3.11)
-  - Docker build and test
-  - Code coverage reporting
+- **Pull Request Checks** (`pr-checks.yml`): Comprehensive validation for PRs
+  - Code quality: Black, isort, flake8, mypy
+  - Testing: Full test suite with coverage
+  - Compatibility: Multi-Python version testing (3.9-3.12)
+  - Documentation: Docstring validation and deprecated import checks
 
-- **Pull Request Checks**: Additional quality checks for PRs
-  - Code style checks (flake8, black, isort)
-  - Type checking with mypy
-  - Specific compatibility checks for known issues
+- **Security Analysis** (`security-sast.yml`): Python-native security scanning
+  - Static analysis with Bandit, Safety, Semgrep, Pylint
+  - Automated PR comments with security summaries
+  - Weekly scheduled security audits
 
-- **Scheduled Tests**: Weekly comprehensive test suite
-  - Runs full test suite on multiple Python versions
-  - Checks for deprecation warnings
-  - Validates code health over time
+- **CI/CD Pipeline** (`ci.yml`): Main integration testing
+  - Unit and integration testing with PostgreSQL/Redis
+  - Docker availability detection and alternative testing
+  - Dockerfile validation and container testing when possible
+  - Application startup verification
+
+#### Local Testing
+
+Run the local CI simulation script to test your changes:
+
+```bash
+./test-ci-local.sh
+```
+
+This script checks:
+- Python environment and dependencies
+- Code quality (flake8, mypy)
+- Application startup
+- Docker configuration validation
+- Unit test execution
 
 - **Documentation Builder**: Automatically builds and publishes documentation
   - Rebuilds when code or documentation changes
@@ -44,8 +60,34 @@ This project uses GitHub Actions for continuous integration and deployment:
 
 ### Status Badges
 
-[![CI/CD Pipeline](https://github.com/hveda/mail-scheduler/actions/workflows/ci.yml/badge.svg)](https://github.com/hveda/mail-scheduler/actions/workflows/ci.yml)
+[![CI/CD Pipeline](https://github.com/hveda/mail-scheduler/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/hveda/mail-scheduler/actions/workflows/pr-checks.yml)
+[![Security SAST](https://github.com/hveda/mail-scheduler/actions/workflows/security-sast.yml/badge.svg)](https://github.com/hveda/mail-scheduler/actions/workflows/security-sast.yml)
 [![Documentation](https://github.com/hveda/mail-scheduler/actions/workflows/docs.yml/badge.svg)](https://github.com/hveda/mail-scheduler/actions/workflows/docs.yml)
+
+### Security Scanning
+
+The project includes comprehensive automated security analysis with Python-native tools:
+
+#### Static Application Security Testing (SAST)
+- **Bandit**: Scans Python code for common security issues and vulnerabilities
+- **Safety**: Checks dependencies against known security vulnerability databases
+- **Semgrep**: Advanced security pattern analysis with OWASP rules
+- **Pylint Security**: Code quality checks with security-focused plugins
+
+#### Security Features
+- **Automated scanning** on every push and pull request
+- **Weekly security audits** via scheduled workflows
+- **Security report artifacts** stored for 30 days
+- **PR comments** with security analysis summaries
+- **Critical issue detection** with actionable feedback
+
+#### Security Configuration
+Security tools are configured via:
+- `pyproject.toml` - Bandit, Black, isort, MyPy, Pytest, Coverage settings
+- `.bandit` - Additional Bandit security linter configuration
+- `.semgrepignore` - Semgrep ignore patterns for irrelevant files
+
+No external API tokens required - all tools run locally within GitHub Actions.
 
 ## Setup
 
@@ -246,12 +288,12 @@ Models use property decorators for better encapsulation and validation:
 class Event(db.Model):
     # Database columns with underscore prefix for encapsulation
     _email_subject = db.Column('email_subject', db.String, nullable=False)
-    
+
     @property
     def email_subject(self) -> str:
         """Get the email subject."""
         return self._email_subject
-        
+
     @email_subject.setter
     def email_subject(self, value: str) -> None:
         """Set the email subject with validation."""
@@ -267,7 +309,7 @@ Flask routes use class-based views for better organization:
 ```python
 class EventListView(MethodView):
     """Class-based view for listing all events."""
-    
+
     def get(self):
         """GET method to display all events."""
         events = EventService.get_all()

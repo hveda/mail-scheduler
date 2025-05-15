@@ -10,7 +10,7 @@ This is a Flask-based application that schedules and sends emails using Redis qu
   - `api/` - API endpoints using Flask-RESTX
   - `database/` - Database models and configuration
   - `event/` - Event handling, jobs, and email scheduling
-  - `commands.py` - Flask CLI commands 
+  - `commands.py` - Flask CLI commands
   - `config.py` - Application configuration
   - `extensions.py` - Flask extensions
 

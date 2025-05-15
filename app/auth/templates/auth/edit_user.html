@@ -4,7 +4,7 @@
 <div class="container">
     <h1>Edit User</h1>
     <a href="{{ url_for('auth.users') }}" class="btn btn-secondary">Back to Users</a>
-    
+
     <div class="edit-user-form mt-4">
         <form action="{{ url_for('auth.edit_user', user_id=user.id) }}" method="post">
             {{ form.hidden_tag() }}

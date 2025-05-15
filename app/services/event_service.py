@@ -1,12 +1,16 @@
 """Event service class implementation."""
-from datetime import datetime, UTC
-from typing import List, Dict, Any, Optional, Union
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import Any, Dict, List, Optional, Union, cast
 
 from markupsafe import Markup
 
 from app.database import db
 from app.database.models import Event
 from app.services.base import BaseService
+from app.utils.security import safe_error_message
 
 
 class EventService(BaseService[Event]):
@@ -20,11 +24,14 @@ class EventService(BaseService[Event]):
         Returns:
             List of Event objects
         """
-        # Check if the Event model has a user relationship before trying to load it
+        # Check if the Event model has a user relationship before trying to
+        # load it
         # This makes the method more robust and backwards compatible
-        if hasattr(Event, 'user'):
-            return Event.query.options(db.joinedload(Event.user)).all()
-        return Event.query.all()
+        if hasattr(Event, "user"):
+            return cast(
+                List[Event], Event.query.options(db.joinedload(Event.user)).all()
+            )
+        return cast(List[Event], Event.query.all())
 
     # Legacy adapter for backward compatibility
     @classmethod
@@ -43,7 +50,7 @@ class EventService(BaseService[Event]):
         Returns:
             Event object if found, None otherwise
         """
-        return Event.query.get(item_id)
+        return cast(Optional[Event], Event.query.get(item_id))
 
     # Legacy adapter for backward compatibility
     @classmethod
@@ -65,23 +72,23 @@ class EventService(BaseService[Event]):
         try:
             # Create a new event object
             new_event = Event(
-                email_subject=data.get('name', ''),
-                email_content=data.get('notes', ''),
+                email_subject=data.get("name", ""),
+                email_content=data.get("notes", ""),
                 # This should be adjusted based on your needs
                 timestamp=datetime.now(UTC),
                 created_at=datetime.now(UTC),
                 is_done=False,
-                done_at=None
+                done_at=None,
             )
 
             # Save to database
             db.session.add(new_event)
             db.session.commit()
 
-            return new_event.id
+            return cast(int, new_event.id)
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to add event: {str(e)}")
+            return safe_error_message(e)
 
     # Legacy adapter for backward compatibility
     @classmethod
@@ -107,15 +114,15 @@ class EventService(BaseService[Event]):
                 return Markup("<strong>Error!</strong> Event does not exist.")
 
             # Update event attributes
-            event.email_subject = data.get('name', event.email_subject)
-            event.email_content = data.get('notes', event.email_content)
+            event.email_subject = data.get("name", event.email_subject)
+            event.email_content = data.get("notes", event.email_content)
 
             # Save changes
             db.session.commit()
             return True
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to update event: {str(e)}")
+            return safe_error_message(e)
 
     # Legacy adapter for backward compatibility
     @classmethod
@@ -145,7 +152,7 @@ class EventService(BaseService[Event]):
             return True
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to delete event: {str(e)}")
+            return safe_error_message(e)
 
     # Legacy adapter for backward compatibility
     @classmethod

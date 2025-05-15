@@ -1,12 +1,14 @@
 """Tests for error handling in jobs."""
-import pytest
-from unittest.mock import patch, MagicMock
+
 from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from app.event.jobs import add_event, dt_utc
 
 
-@patch('app.event.jobs.dt_utc')
+@patch("app.event.jobs.dt_utc")
 def test_add_event_exception_handling(mock_dt_utc):
     """Test that exceptions in add_event are properly raised."""
     # Make dt_utc raise an exception
@@ -14,10 +16,10 @@ def test_add_event_exception_handling(mock_dt_utc):
 
     # Test data with valid format but will trigger exception due to mock
     event_data = {
-        'subject': 'Test Email',
-        'content': 'This is a test',
-        'timestamp': '10 May 2025 12:00 +08',
-        'recipients': 'test@example.com'
+        "subject": "Test Email",
+        "content": "This is a test",
+        "timestamp": "10 May 2025 12:00 +08",
+        "recipients": "test@example.com",
     }
 
     # Call function, should raise the exception
@@ -27,9 +29,9 @@ def test_add_event_exception_handling(mock_dt_utc):
     assert "Invalid timestamp format" in str(excinfo.value)
 
 
-@patch('app.event.jobs.Event')
-@patch('app.database.db.session.add')
-@patch('app.database.db.session.commit')
+@patch("app.event.jobs.Event")
+@patch("app.database.db.session.add")
+@patch("app.database.db.session.commit")
 def test_add_event_database_error(mock_commit, mock_add, mock_event):
     """Test database error handling in add_event."""
     # Setup mock to raise exception when accessing property
@@ -39,10 +41,10 @@ def test_add_event_database_error(mock_commit, mock_add, mock_event):
 
     # Test data
     event_data = {
-        'subject': 'Test Email',
-        'content': 'This is a test',
-        'timestamp': '10 May 2025 12:00 +08',
-        'recipients': 'test@example.com'
+        "subject": "Test Email",
+        "content": "This is a test",
+        "timestamp": "10 May 2025 12:00 +08",
+        "recipients": "test@example.com",
     }
 
     # Call function, should raise the exception

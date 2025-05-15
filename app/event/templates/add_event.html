@@ -5,7 +5,7 @@
         <h1>Schedule New Email</h1>
         <form method="POST">
             {{ form.csrf_token }}
-            
+
             <div class="mb-3">
                 <label for="name" class="form-label">{{ form.name.label }}</label>
                 {{ form.name(class="form-control") }}
@@ -17,7 +17,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="recipients" class="form-label">{{ form.recipients.label }}</label>
                 {{ form.recipients(class="form-control", placeholder="email1@example.com, email2@example.com") }}
@@ -30,7 +30,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="schedule_time" class="form-label">{{ form.schedule_time.label }}</label>
                 {{ form.schedule_time(class="form-control", type="datetime-local") }}
@@ -43,7 +43,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="notes" class="form-label">{{ form.notes.label }}</label>
                 {{ form.notes(class="form-control", rows=5) }}
@@ -55,7 +55,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <button type="submit" class="btn btn-primary">Schedule Email</button>
                 <a href="{{ url_for('items.all_events') }}" class="btn btn-secondary">Cancel</a>

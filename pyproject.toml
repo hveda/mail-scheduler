@@ -1,0 +1,212 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mail-scheduler"
+version = "0.1.0"
+description = "Flask-based mail scheduler application"
+authors = [
+    { name = "Mail Scheduler Team" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: Flask",
+]
+dependencies = [
+    "alembic==1.13.1",
+    "aniso8601==9.0.1",
+    "beautifulsoup4==4.12.3",
+    "blinker==1.7.0",
+    "bs4==0.0.2",
+    "click==8.1.7",
+    "croniter==2.0.2",
+    "Flask==2.3.2",
+    "Flask-Admin==1.6.1",
+    "Flask-Login==0.6.3",
+    "Flask-Mail==0.9.1",
+    "Flask-Migrate==4.0.5",
+    "flask-restx==1.3.0",
+    "Flask-RQ2==18.3",
+    "Flask-Script==2.0.6",
+    "Flask-SQLAlchemy==3.1.1",
+    "Flask-WTF==1.2.1",
+    "isodate==0.6.1",
+    "itsdangerous==2.1.2",
+    "Jinja2==3.1.6",
+    "jsonschema==4.17.3",
+    "Mako==1.3.0",
+    "MarkupSafe==2.1.5",
+    "psycopg2-binary==2.9.9",
+    "python-dateutil==2.8.2",
+    "python-editor==1.0.4",
+    "pytz==2024.1",
+    "redis==5.0.1",
+    "rq==1.15.1",
+    "rq-scheduler==0.10.0",
+    "six==1.16.0",
+    "SQLAlchemy==2.0.30",
+    "tzlocal==5.2",
+    "Werkzeug==3.0.6",
+    "WTForms==3.1.1",
+    "email-validator==2.1.0.post1",
+    "bcrypt==4.0.1",
+    "Sphinx==7.2.6",
+    "sphinx-rtd-theme==2.0.0",
+    "sphinxcontrib-httpdomain==1.8.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "bandit[toml]>=1.7.0",
+    "safety>=3.0.0",
+    "semgrep>=1.0.0",
+    "pylint>=3.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/mail-scheduler"
+Repository = "https://github.com/yourusername/mail-scheduler.git"
+Issues = "https://github.com/yourusername/mail-scheduler/issues"
+
+[tool.bandit]
+# Bandit security linter configuration
+exclude_dirs = [
+    ".venv",
+    "venv",
+    "tests",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    "machine-learning"
+]
+
+# Tests to skip (security checks that are not relevant)
+skips = [
+    "B101",  # Test for use of assert (common in tests)
+    "B601"   # Test for shell injection within Paramiko (if not using Paramiko)
+]
+
+# Severity and confidence levels
+severity = "medium"
+confidence = "medium"
+
+[tool.bandit.assert_used]
+# Allow assert statements in certain contexts
+skips = ["*test*.py", "*conftest.py"]
+
+[tool.black]
+# Black code formatter configuration
+line-length = 88
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.venv
+  | venv
+  | build
+  | dist
+  | machine-learning
+)/
+'''
+
+[tool.isort]
+# isort import sorter configuration
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["app"]
+skip = [".venv", "venv", "build", "dist"]
+
+[tool.mypy]
+# MyPy type checker configuration
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "flask_sqlalchemy.*",
+    "flask_migrate.*",
+    "flask_mail.*",
+    "redis.*",
+    "rq.*"
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+# Pytest configuration
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+
+[tool.coverage.run]
+# Coverage configuration
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*"
+]
+
+[tool.coverage.report]
+# Coverage reporting
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]
+
+[dependency-groups]
+dev = [
+    "types-beautifulsoup4>=4.12.0.20250516",
+    "types-python-dateutil>=2.9.0.20250708",
+    "types-pytz>=2025.2.0.20250516",
+    "types-wtforms>=3.2.1.20250602",
+]

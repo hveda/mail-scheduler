@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """Test basic imports of the application."""
 try:
-    from app import create_app, config
+    from app import config, create_app
+
     # Use the imports to avoid flake8 warnings
     app = create_app(config.TestingConfig)
     print("Imports successful!")
@@ -9,4 +10,5 @@ try:
 except ImportError as e:
     print(f"Import error: {e}")
     import traceback
+
     traceback.print_exc()

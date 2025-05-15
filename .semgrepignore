@@ -1,0 +1,40 @@
+# Semgrep ignore patterns
+# https://semgrep.dev/docs/ignoring-files-folders-code/
+
+# Virtual environments
+.venv/
+venv/
+*/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Version control
+.git/
+
+# Test files (optional - remove if you want to scan tests)
+tests/
+
+# Machine learning directory
+machine-learning/
+
+# Documentation
+docs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

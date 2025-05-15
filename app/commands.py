@@ -11,10 +11,11 @@ def create_db():
 def drop_db():
     """Drops the database."""
     import flask
-    if flask.current_app and flask.current_app.config.get('TESTING'):
+
+    if flask.current_app and flask.current_app.config.get("TESTING"):
         # Skip confirmation in testing mode
         db.drop_all()
-    elif click.confirm('Are you sure?', abort=True):
+    elif click.confirm("Are you sure?", abort=True):
         db.drop_all()
 
 

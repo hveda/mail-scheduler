@@ -1,22 +1,24 @@
 """Comprehensive tests for app/event/jobs.py."""
+
+from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 import pytest
-from datetime import datetime, timedelta, UTC
-from unittest.mock import patch, MagicMock
 import pytz
 
-from app.event.jobs import add_recipients, dt_utc, schedule_mail, send_mail
 from app.database.models import Event, Recipient
+from app.event.jobs import add_recipients, dt_utc, schedule_mail, send_mail
 
 
 @pytest.fixture
 def mock_event(app):
     """Create a mock event for testing."""
     with app.app_context():
-        event = Event(dict(
+        event = Event(
             email_subject="Test Subject",
             email_content="<p>Test Content</p>",
-            timestamp=datetime.now(UTC) + timedelta(days=1)
-        ))
+            timestamp=datetime.now(UTC) + timedelta(days=1),
+        )
         return event
 
 
@@ -24,7 +26,7 @@ def mock_event(app):
 def mock_db_session(monkeypatch):
     """Mock the database session for testing."""
     mock_session = MagicMock()
-    monkeypatch.setattr('app.event.jobs.db.session', mock_session)
+    monkeypatch.setattr("app.event.jobs.db.session", mock_session)
     return mock_session
 
 
@@ -53,8 +55,8 @@ def test_add_recipients(app, mock_db_session):
 def test_dt_utc_with_timezone(monkeypatch):
     """Test converting datetime string with timezone to UTC."""
     # Mock get_localzone to return a consistent timezone
-    mock_tz = pytz.timezone('America/New_York')
-    monkeypatch.setattr('app.event.jobs.get_localzone', lambda: mock_tz)
+    mock_tz = pytz.timezone("America/New_York")
+    monkeypatch.setattr("app.event.jobs.get_localzone", lambda: mock_tz)
 
     # Define test datetime in a specific timezone
     test_dt = "2023-01-01 12:00:00 US/Pacific"
@@ -73,8 +75,8 @@ def test_dt_utc_with_timezone(monkeypatch):
 def test_dt_utc_without_timezone(monkeypatch):
     """Test converting datetime string without timezone to UTC."""
     # Mock get_localzone to return a consistent timezone
-    mock_tz = pytz.timezone('America/New_York')
-    monkeypatch.setattr('app.event.jobs.get_localzone', lambda: mock_tz)
+    mock_tz = pytz.timezone("America/New_York")
+    monkeypatch.setattr("app.event.jobs.get_localzone", lambda: mock_tz)
 
     # Define test datetime without timezone
     test_dt = "2023-01-01 12:00:00"
@@ -102,28 +104,25 @@ def test_schedule_mail(mock_redis):
 
     # Check that the scheduler's enqueue_at method was called
     assert mock_redis.enqueue_at.called
-    mock_redis.enqueue_at.assert_called_with(
-        timestamp, send_mail, event_id, recipients)
+    mock_redis.enqueue_at.assert_called_with(timestamp, send_mail, event_id, recipients)
 
 
 # Test send_mail function
-@patch('app.event.jobs.Message')
+@patch("app.event.jobs.Message")
 def test_send_mail(mock_message_class, app, mock_event, monkeypatch):
     """Test sending an email."""
     # Setup
     mock_msg = MagicMock()
     mock_message_class.return_value = mock_msg
 
-    # Mock Event.query.get to return our mock event
-    mock_query = MagicMock()
-    mock_query.get.return_value = mock_event
-    mock_event_class = MagicMock()
-    mock_event_class.query = mock_query
-    monkeypatch.setattr('app.event.jobs.Event', mock_event_class)
+    # Ensure the event has the expected ID for the test
+    mock_event.id = 1
 
-    # Mock mail.send
+    # Mock mail.connect() context manager
     mock_mail = MagicMock()
-    monkeypatch.setattr('app.event.jobs.mail', mock_mail)
+    mock_conn = MagicMock()
+    mock_mail.connect.return_value.__enter__.return_value = mock_conn
+    monkeypatch.setattr("app.event.jobs.mail", mock_mail)
 
     # Mock recipient query and update
     mock_recipient = MagicMock()
@@ -131,29 +130,28 @@ def test_send_mail(mock_message_class, app, mock_event, monkeypatch):
     mock_recipient_query.filter_by.return_value.first.return_value = mock_recipient
     mock_recipient_class = MagicMock()
     mock_recipient_class.query = mock_recipient_query
-    monkeypatch.setattr('app.event.jobs.Recipient', mock_recipient_class)
+    monkeypatch.setattr("app.event.jobs.Recipient", mock_recipient_class)
 
     # Mock db session
     mock_db_session = MagicMock()
-    monkeypatch.setattr('app.event.jobs.db.session', mock_db_session)
+    mock_db_session.get.return_value = mock_event  # Add get method to return mock_event
+    monkeypatch.setattr("app.event.jobs.db.session", mock_db_session)
 
     # Call the function
     with app.app_context():
         result = send_mail(1, ["test@example.com"])
 
     # Check that email was created with correct subject
-    mock_message_class.assert_called_once_with(
-        subject=mock_event.email_subject)
+    mock_message_class.assert_called_once_with(subject=mock_event.email_subject)
 
     # Check that email recipients were added
     assert mock_msg.add_recipient.called
 
     # Check that email was sent
-    assert mock_mail.send.called
+    assert mock_conn.send.called
 
     # Check that recipient was updated in the database
     assert mock_db_session.commit.called
 
     # Check result contains success message
-    assert "Email sent" in result
-    assert "to test@example.com" in result
+    assert "Success" in result

@@ -3,14 +3,17 @@
 This script initializes the database with default values.
 """
 
+from __future__ import annotations
+
+from datetime import UTC, datetime, timedelta
+from typing import List, cast
+
 import click
 from flask.cli import with_appcontext
-from datetime import datetime, timedelta, UTC
-from typing import List, Dict, Any
 
 from app.database import db
-from app.database.models.user import User
 from app.database.models import Event, Recipient
+from app.database.models.user import User
 
 
 def create_default_admin() -> User:
@@ -20,19 +23,19 @@ def create_default_admin() -> User:
     Returns:
         User: The created or existing admin user
     """
-    admin = User.query.filter_by(username='admin').first()
+    admin = User.query.filter_by(username="admin").first()
     if admin:
         click.echo("Admin user already exists.")
-        return admin
+        return cast(User, admin)
 
     admin = User(
-        username='admin',
-        email='admin@example.com',
-        role='admin',
-        first_name='Admin',
-        last_name='User'
+        username="admin",
+        email="admin@example.com",
+        role="admin",
+        first_name="Admin",
+        last_name="User",
     )
-    admin.password = 'adminpassword'  # This will be hashed
+    admin.password = "adminpassword"  # This will be hashed  # nosec B105
 
     db.session.add(admin)
     db.session.commit()
@@ -47,19 +50,19 @@ def create_test_user() -> User:
     Returns:
         User: The created or existing test user
     """
-    test_user = User.query.filter_by(username='testuser').first()
+    test_user = User.query.filter_by(username="testuser").first()
     if test_user:
         click.echo("Test user already exists.")
-        return test_user
+        return cast(User, test_user)
 
     test_user = User(
-        username='testuser',
-        email='test@example.com',
-        role='user',
-        first_name='Test',
-        last_name='User'
+        username="testuser",
+        email="test@example.com",
+        role="user",
+        first_name="Test",
+        last_name="User",
     )
-    test_user.password = 'testpassword'  # This will be hashed
+    test_user.password = "testpassword"  # This will be hashed  # nosec B105
 
     db.session.add(test_user)
     db.session.commit()
@@ -81,22 +84,22 @@ def create_standard_users() -> List[User]:
             "email": "user1@example.com",
             "first_name": "John",
             "last_name": "Doe",
-            "password": "password1"
+            "password": "password1",
         },
         {
             "username": "user2",
             "email": "user2@example.com",
             "first_name": "Jane",
             "last_name": "Smith",
-            "password": "password2"
+            "password": "password2",
         },
         {
             "username": "user3",
             "email": "user3@example.com",
             "first_name": "Robert",
             "last_name": "Johnson",
-            "password": "password3"
-        }
+            "password": "password3",
+        },
     ]
 
     for data in user_data:
@@ -108,9 +111,9 @@ def create_standard_users() -> List[User]:
         user = User(
             username=data["username"],
             email=data["email"],
-            role='user',
+            role="user",
             first_name=data["first_name"],
-            last_name=data["last_name"]
+            last_name=data["last_name"],
         )
         user.password = data["password"]
         db.session.add(user)
@@ -130,16 +133,12 @@ def create_sample_events() -> List[Event]:
     """
     if Event.query.count() > 0:
         click.echo("Sample events already exist.")
-        return Event.query.all()
+        return cast(List[Event], Event.query.all())
 
     # Get users to associate with events
-    admin = User.query.filter_by(username='admin').first()
-    test_user = User.query.filter_by(username='testuser').first()
-    users = User.query.filter(User.username.in_(
-        ['user1', 'user2', 'user3'])).all()
-
-    # Combine all users
-    all_users = [admin, test_user] + users if users else [admin, test_user]
+    admin = User.query.filter_by(username="admin").first()
+    test_user = User.query.filter_by(username="testuser").first()
+    users = User.query.filter(User.username.in_(["user1", "user2", "user3"])).all()
 
     now = datetime.now(UTC)
     events = []
@@ -150,7 +149,7 @@ def create_sample_events() -> List[Event]:
         email_content="This meeting happened yesterday.",
         timestamp=now - timedelta(days=1),
         is_done=True,
-        done_at=now - timedelta(days=1)
+        done_at=now - timedelta(days=1),
     )
     # Assign user_id separately to avoid constructor issues
     if admin:
@@ -161,7 +160,7 @@ def create_sample_events() -> List[Event]:
         email_subject="Today's Meeting Reminder",
         email_content="Don't forget our meeting today at 3pm.",
         timestamp=now + timedelta(hours=2),
-        is_done=False
+        is_done=False,
     )
     # Assign user_id separately to avoid constructor issues
     if test_user:
@@ -170,9 +169,9 @@ def create_sample_events() -> List[Event]:
     # Event for tomorrow
     tomorrow_event = Event(
         email_subject="Tomorrow's Status Update",
-        email_content="Please prepare your status update for tomorrow's meeting.",
+        email_content=("Please prepare your status update for tomorrow's meeting."),
         timestamp=now + timedelta(days=1),
-        is_done=False
+        is_done=False,
     )
     # Assign user_id separately to avoid constructor issues
     if users:
@@ -183,7 +182,7 @@ def create_sample_events() -> List[Event]:
         email_subject="Weekly Planning Session",
         email_content="We will discuss the sprint goals for next week.",
         timestamp=now + timedelta(days=7),
-        is_done=False
+        is_done=False,
     )
     # Assign user_id separately to avoid constructor issues
     if len(users) > 1:
@@ -212,7 +211,7 @@ def add_recipients_to_events(events: List[Event]) -> None:
         {"email": "team@example.com", "name": "Team"},
         {"email": "manager@example.com", "name": "Manager"},
         {"email": "client@example.com", "name": "Client"},
-        {"email": "support@example.com", "name": "Support Team"}
+        {"email": "support@example.com", "name": "Support Team"},
     ]
 
     # Add recipients to each event
@@ -222,12 +221,12 @@ def add_recipients_to_events(events: List[Event]) -> None:
             recipient = Recipient(
                 email=recipient_data[i]["email"],
                 name=recipient_data[i]["name"],
-                event_id=event.id
+                event_id=event.id,
             )
             db.session.add(recipient)
 
     db.session.commit()
-    click.echo(f"Added recipients to events.")
+    click.echo("Added recipients to events.")
 
 
 @click.command("init-db")

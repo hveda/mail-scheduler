@@ -1,0 +1,24 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore: {}
+
+# Configuration for specific checks
+language-settings:
+  python: 3.11
+
+# Exclude patterns for scanning
+exclude:
+  global:
+    - node_modules/
+    - .venv/
+    - venv/
+    - __pycache__/
+    - "*.pyc"
+    - .git/
+    - .pytest_cache/
+    - build/
+    - dist/
+    - "*.egg-info/"
+
+patch: {}
