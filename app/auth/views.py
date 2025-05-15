@@ -49,8 +49,8 @@ class LoginView(MethodView):
             user.update_last_login()
 
             next_page = request.args.get('next', '')
-            next_page = next_page.replace('\\', '')  # Remove backslashes
-            if not next_page or url_parse(next_page).netloc != '' or url_parse(next_page).scheme:
+            allowed_paths = ['/items/all_events', '/items/some_other_page']  # Whitelist of allowed paths
+            if next_page not in allowed_paths:
                 next_page = url_for('items.all_events')  # Default to a safe fallback
 
             return redirect(next_page)
