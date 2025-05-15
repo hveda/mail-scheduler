@@ -49,9 +49,14 @@ class LoginView(MethodView):
             login_user(user, remember=form.remember_me.data)
             user.update_last_login()
 
+            # Define a whitelist of allowed relative paths
+            allowed_paths = {'/items/all_events', '/profile', '/dashboard'}
+
             next_page = request.args.get('next', '').replace('\\', '')  # Sanitize input
             parsed_url = url_parse(next_page)
-            if parsed_url.netloc or parsed_url.scheme:  # Ensure it's a relative path
+
+            # Validate that the next_page is a relative path and in the whitelist
+            if parsed_url.netloc or parsed_url.scheme or next_page not in allowed_paths:
                 next_page = url_for('items.all_events')  # Default to a safe fallback
 
             return redirect(next_page)
