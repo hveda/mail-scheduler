@@ -5,33 +5,33 @@ from typing import Optional, List
 
 class Event(db.Model):
     """Event model for scheduled emails."""
-    
+
     __tablename__ = 'events'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     _email_subject = db.Column('email_subject', db.String, nullable=False)
     _email_content = db.Column('email_content', db.String)
     timestamp = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, 
+    created_at = db.Column(db.DateTime, nullable=False,
                            default=lambda: datetime.now(UTC))
     _is_done = db.Column('is_done', db.Boolean, nullable=False, default=False)
     done_at = db.Column(db.DateTime, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    
+
     # Define relationship with Recipient model
     recipients = db.relationship('Recipient', backref='event', lazy='dynamic')
-    
-    def __init__(self, 
-                 email_subject: str, 
+
+    def __init__(self,
+                 email_subject: str,
                  email_content: str,
-                 timestamp: datetime, 
-                 created_at: Optional[datetime] = None, 
+                 timestamp: datetime,
+                 created_at: Optional[datetime] = None,
                  is_done: Optional[bool] = False,
                  done_at: Optional[datetime] = None,
                  user_id: Optional[int] = None) -> None:
         """
         Initialize an Event instance.
-        
+
         Args:
             email_subject: Subject line of the email
             email_content: Body content of the email
@@ -48,55 +48,55 @@ class Event(db.Model):
         self.is_done = is_done
         self.done_at = done_at
         self.user_id = user_id
-        
+
     @property
     def email_subject(self) -> str:
         """Get the email subject."""
         return self._email_subject
-        
+
     @email_subject.setter
     def email_subject(self, value: str) -> None:
         """
         Set the email subject.
-        
+
         Args:
             value: The new subject value
-            
+
         Raises:
             ValueError: If value is empty
         """
         if not value:
             raise ValueError("Email subject cannot be empty")
         self._email_subject = value
-        
+
     @property
     def email_content(self) -> str:
         """Get the email content."""
         return self._email_content
-        
+
     @email_content.setter
     def email_content(self, value: str) -> None:
         """
         Set the email content.
-        
+
         Args:
             value: The new content value
         """
         self._email_content = value or ""
-        
+
     @property
     def is_done(self) -> bool:
         """Get the is_done status."""
         return self._is_done
-        
+
     @is_done.setter
     def is_done(self, value: bool) -> None:
         """
         Set the is_done status.
-        
+
         Args:
             value: The new status value
-            
+
         Note:
             When setting to True, done_at is automatically set to current time
         """
@@ -112,9 +112,9 @@ class Event(db.Model):
 
 class Recipient(db.Model):
     """Recipient model for email addresses."""
-    
+
     __tablename__ = 'recipients'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     email_address = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=True)  # Optional recipient name
@@ -122,15 +122,15 @@ class Recipient(db.Model):
     is_sent = db.Column(db.Boolean, nullable=False, default=False)
     sent_at = db.Column(db.DateTime, nullable=True)
 
-    def __init__(self, 
-                 email_address: str, 
+    def __init__(self,
+                 email_address: str,
                  event_id: int,
                  name: Optional[str] = None,
-                 is_sent: Optional[bool] = False, 
+                 is_sent: Optional[bool] = False,
                  sent_at: Optional[datetime] = None) -> None:
         """
         Initialize a Recipient instance.
-        
+
         Args:
             email_address: Email address of the recipient
             event_id: ID of the associated event

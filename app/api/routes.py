@@ -1,16 +1,17 @@
 """Endpoints for the Mail Scheduler API.
 
-This module provides RESTful API endpoints for scheduling emails and checking API health.
+This module provides RESTful API endpoints
+for scheduling emails and checking API health.
 """
 
 from datetime import datetime, timedelta, UTC
 
 from pytz import timezone
-from flask import request, jsonify
+from flask import request
 from flask_restx import Namespace, Resource, fields
 
 from app.event.jobs import add_event
-from app.services.event_service import EventService  # Import service layer
+# from app.services.event_service import EventService  # Import service layer
 
 # Create namespace
 ns = Namespace('Event', description='Email scheduling API endpoints', path='/')
@@ -38,7 +39,7 @@ mail_event = ns.model('SubmitEvent', {
         description='Time mail to sent, format dd mm YYYY HH:MM\n\
                   Assume as server timezone when timezone not provided.',
         example=local_now.strftime("%d %b %Y %H:%M %Z")
-    ),    
+    ),
     'recipients': fields.String(
         required=True,
         description='Mail recipients separated by comma(s)',
@@ -55,14 +56,15 @@ event_model = ns.model('Event', {
     'timestamp': fields.DateTime(description='Scheduled time for sending'),
     'created_at': fields.DateTime(description='Event creation time'),
     'is_done': fields.Boolean(description='Whether the email has been sent'),
-    'done_at': fields.DateTime(description='Time when the email was sent', required=False),
+    'done_at': fields.DateTime(description='Time when the email was sent',
+                               required=False),
 })
 
 
 @ns.route('/health')
 class HealthCheck(Resource):
     """API health check endpoint for monitoring and status verification."""
-    
+
     @ns.doc(
         description='Returns the current status of the API.',
         responses={
@@ -73,7 +75,7 @@ class HealthCheck(Resource):
     def get(self):
         """
         Return API health status.
-        
+
         This endpoint can be used by monitoring tools to verify service availability.
         Returns a simple JSON response with status and current timestamp.
         """
@@ -84,7 +86,7 @@ class HealthCheck(Resource):
 class EventApi(Resource):
     """
     Email scheduling endpoint.
-    
+
     This resource allows clients to schedule emails to be sent at a specific time
     by creating an event in the system. The emails will be sent asynchronously
     using the background task queue.
@@ -102,22 +104,22 @@ class EventApi(Resource):
     def post(self):
         """
         Submit a new email event for scheduling.
-        
+
         Creates a new scheduled email event with the provided subject, content,
         timestamp, and recipients. The email will be sent at the specified time
         to all recipients.
-        
+
         Returns:
             tuple: A tuple containing a JSON response and HTTP status code
                   The JSON includes a success message and the ID of the created event
-        
+
         Raises:
             Exception: If the event cannot be created due to validation errors or
                        database issues.
         """
         try:
             event_id = add_event(request.json)
-            return {"message": "Event successfully saved to scheduler", 
+            return {"message": "Event successfully saved to scheduler",
                     "id": event_id}, 201
         except Exception as e:
             return {"message": f"Error occurred: {str(e)}"}, 400
@@ -127,11 +129,11 @@ class EventApi(Resource):
 class EventDetailApi(Resource):
     """
     Event detail endpoint.
-    
-    This resource allows clients to retrieve, update, or delete a specific
-    scheduled email event by its ID.
+
+    This resource allows clients to retrieve, update,
+    or delete a specific scheduled email event by its ID.
     """
-    
+
     @ns.doc(
         description='Get details of a specific scheduled email',
         params={'event_id': 'The ID of the event to retrieve'},
@@ -145,16 +147,16 @@ class EventDetailApi(Resource):
     def get(self, event_id):
         """
         Retrieve a specific email event by ID.
-        
+
         Returns detailed information about the requested email event,
         including subject, content, scheduled time, and status.
-        
+
         Args:
             event_id (int): The ID of the event to retrieve
-            
+
         Returns:
             dict: The event details if found
-            
+
         Raises:
             404: If the event with the specified ID does not exist
         """
@@ -162,10 +164,10 @@ class EventDetailApi(Resource):
             # Use our service layer to get the specific event
             from app.services.event_service import EventService
             event = EventService.get_by_id(event_id)
-            
+
             if not event:
                 ns.abort(404, f"Event with ID {event_id} not found")
-                
+
             return event, 200
         except Exception as e:
             return {"message": f"Error occurred: {str(e)}"}, 500

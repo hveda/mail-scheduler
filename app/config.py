@@ -21,7 +21,7 @@ class Config(object):
         SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
     else:
         SQLALCHEMY_DATABASE_URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
-    
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAIL_SERVER = 'smtp.gmail.com'
@@ -30,7 +30,8 @@ class Config(object):
     MAIL_USE_SSL = False
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'your-mandrill-username'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'your mandrill-password'
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'your@default-mail.com'
+    MAIL_DEFAULT_SENDER = os.environ.get(
+        'MAIL_DEFAULT_SENDER') or 'your@default-mail.com'
 
     REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
     REDIS_PORT = os.environ.get('REDIS_PORT', 6379)

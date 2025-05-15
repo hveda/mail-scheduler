@@ -14,16 +14,26 @@ def main():
 
     # Check and install required dependencies
     try:
-        import sphinx
-        import sphinx_rtd_theme
+        # Check if required packages are installed
         try:
-            import sphinxcontrib.httpdomain
+            __import__('sphinx')
+            __import__('sphinx_rtd_theme')
+            __import__('sphinxcontrib.httpdomain')
         except ImportError:
             print("Installing required documentation dependencies...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "sphinxcontrib-httpdomain"], check=True)
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install",
+                 "sphinxcontrib-httpdomain"],
+                check=True
+            )
     except ImportError:
         print("Installing required documentation dependencies...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "sphinx", "sphinx-rtd-theme", "sphinxcontrib-httpdomain"], check=True)
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "sphinx",
+             "sphinx-rtd-theme",
+             "sphinxcontrib-httpdomain"],
+            check=True
+        )
 
     # Ensure docs directory exists
     if not os.path.exists(docs_dir):

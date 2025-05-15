@@ -16,10 +16,10 @@ def test_db_object():
 def test_reset_database(mock_create_all, mock_drop_all):
     """Test reset_database function."""
     from app.database import reset_database
-    
+
     # Call the function
     reset_database()
-    
+
     # Verify both drop_all and create_all were called
     assert mock_drop_all.called
     assert mock_create_all.called

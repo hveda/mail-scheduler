@@ -12,7 +12,7 @@ def test_create_db(app, db):
         # Call the function
         with app.app_context():
             create_db()
-        
+
         # Verify create_all was called
         assert mock_create_all.called
 
@@ -22,21 +22,21 @@ def test_drop_db_with_confirmation(mock_confirm, app, db):
     """Test the drop_db function with user confirmation."""
     # Setup mock to return True (user confirms)
     mock_confirm.return_value = True
-    
+
     with patch('app.database.db.drop_all') as mock_drop_all:
         # Set app to non-testing mode to test confirmation
         app.config['TESTING'] = False
-        
+
         # Call the function
         with app.app_context():
             drop_db()
-        
+
         # Verify confirm was called
         assert mock_confirm.called
-        
+
         # Verify drop_all was called
         assert mock_drop_all.called
-        
+
         # Restore testing config
         app.config['TESTING'] = True
 
@@ -47,22 +47,22 @@ def test_drop_db_without_confirmation(mock_confirm, app, db):
     # Setup mock to return False and raise an exception to simulate abort
     mock_confirm.return_value = False
     mock_confirm.side_effect = Exception("User abort")
-    
+
     with patch('app.database.db.drop_all') as mock_drop_all:
         # Set app to non-testing mode to test confirmation
         app.config['TESTING'] = False
-        
+
         # Call the function - should abort
         with app.app_context():
             with pytest.raises(Exception):
                 drop_db()
-        
+
         # Verify confirm was called
         assert mock_confirm.called
-        
+
         # Verify drop_all was NOT called
         assert not mock_drop_all.called
-        
+
         # Restore testing config
         app.config['TESTING'] = True
 
@@ -72,11 +72,11 @@ def test_drop_db_in_testing_mode(app, db):
     with patch('app.database.db.drop_all') as mock_drop_all:
         # Ensure app is in testing mode
         app.config['TESTING'] = True
-        
+
         # Call the function
         with app.app_context():
             drop_db()
-        
+
         # Verify drop_all was called (without confirmation)
         assert mock_drop_all.called
 
@@ -88,7 +88,7 @@ def test_recreate_db(mock_create_db, mock_drop_db, app):
     # Call the function
     with app.app_context():
         recreate_db()
-    
+
     # Verify both functions were called in order
     assert mock_drop_db.called
     assert mock_create_db.called

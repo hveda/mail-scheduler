@@ -6,6 +6,8 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import sys
+import os
 project = 'Mail Scheduler'
 copyright = '2025, Heri Rusmanto'
 author = 'Heri Rusmanto'
@@ -26,7 +28,6 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -34,6 +35,4 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 # -- Path setup --------------------------------------------------------------
-import os
-import sys
 sys.path.insert(0, os.path.abspath('../..'))

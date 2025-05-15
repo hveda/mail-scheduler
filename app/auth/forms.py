@@ -10,7 +10,7 @@ from app.database.models.user import User
 
 class LoginForm(FlaskForm):
     """Form for user login."""
-    
+
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
@@ -19,10 +19,10 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     """Form for user registration."""
-    
-    username = StringField('Username', 
+
+    username = StringField('Username',
                            validators=[DataRequired(), Length(min=3, max=80)])
-    email = StringField('Email', 
+    email = StringField('Email',
                         validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', widget=PasswordInput(),
                              validators=[DataRequired(), Length(min=8)])
@@ -31,7 +31,7 @@ class RegistrationForm(FlaskForm):
     first_name = StringField('First Name', validators=[Length(max=80)])
     last_name = StringField('Last Name', validators=[Length(max=80)])
     submit = SubmitField('Register')
-    
+
     def validate_username(self, username):
         """Validate that the username is not already in use."""
         user = User.query.filter_by(username=username.data).first()
@@ -47,10 +47,10 @@ class RegistrationForm(FlaskForm):
 
 class UserEditForm(FlaskForm):
     """Form for editing user information."""
-    
-    username = StringField('Username', 
+
+    username = StringField('Username',
                            validators=[DataRequired(), Length(min=3, max=80)])
-    email = StringField('Email', 
+    email = StringField('Email',
                         validators=[DataRequired(), Email(), Length(max=120)])
     first_name = StringField('First Name', validators=[Length(max=80)])
     last_name = StringField('Last Name', validators=[Length(max=80)])
@@ -65,12 +65,12 @@ class UserEditForm(FlaskForm):
 
 class PasswordChangeForm(FlaskForm):
     """Form for changing a user's password."""
-    
-    current_password = PasswordField('Current Password', 
+
+    current_password = PasswordField('Current Password',
                                      validators=[DataRequired()])
-    new_password = PasswordField('New Password', 
+    new_password = PasswordField('New Password',
                                  validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm New Password',
-                                    validators=[DataRequired(), 
-                                               EqualTo('new_password')])
+                                     validators=[DataRequired(),
+                                                 EqualTo('new_password')])
     submit = SubmitField('Change Password')

@@ -5,13 +5,14 @@ from flask import url_for
 from unittest.mock import patch
 from datetime import datetime
 
+
 def test_api_health(client):
     """Test the API health endpoint."""
     response = client.get('/api/health')
     assert response.status_code == 200
     assert response.json['status'] == 'ok'
     assert 'timestamp' in response.json
-    
+
     # Validate timestamp format
     timestamp = response.json['timestamp']
     try:
@@ -21,6 +22,7 @@ def test_api_health(client):
         is_valid_iso = False
     assert is_valid_iso, f"Timestamp {timestamp} is not in ISO format"
 
+
 def test_save_emails_missing_params(client):
     """Test the save_emails endpoint with missing parameters."""
     response = client.post(
@@ -29,7 +31,7 @@ def test_save_emails_missing_params(client):
         content_type='application/json'
     )
     assert response.status_code == 400
-    
+
     # Test with partial data
     partial_payload = {
         'subject': 'Test Email',
@@ -41,6 +43,7 @@ def test_save_emails_missing_params(client):
         content_type='application/json'
     )
     assert response.status_code == 400
+
 
 def test_save_emails_success(client):
     """Test the save_emails endpoint with valid parameters."""
@@ -58,7 +61,8 @@ def test_save_emails_success(client):
     assert response.status_code == 201
     assert 'message' in response.json
     assert 'id' in response.json
-    
+
+
 def test_save_emails_invalid_json(client):
     """Test the save_emails endpoint with invalid JSON."""
     response = client.post(
@@ -67,7 +71,8 @@ def test_save_emails_invalid_json(client):
         content_type='application/json'
     )
     assert response.status_code == 400
-    
+
+
 def test_save_emails_with_multiple_recipients(client):
     """Test the save_emails endpoint with multiple recipients."""
     payload = {

@@ -17,7 +17,7 @@ def test_reset_database(mock_db):
     """Test the reset_database function."""
     # Call the function
     reset_database()
-    
+
     # Verify db operations were called
     assert mock_db.drop_all.called
     assert mock_db.create_all.called

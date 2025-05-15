@@ -15,7 +15,8 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    username = db.Column(db.String(80), unique=True,
+                         nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     _password = db.Column('password_hash', db.String(256), nullable=False)
     first_name = db.Column(db.String(80), nullable=True)
@@ -34,22 +35,22 @@ class User(db.Model, UserMixin):
     def password(self, password: str) -> None:
         """
         Hash and store the user's password.
-        
+
         Args:
             password: The plain text password to hash and store
         """
         if not password:
             raise ValueError("Password cannot be empty")
-        
+
         self._password = generate_password_hash(password)
 
     def verify_password(self, password: str) -> bool:
         """
         Verify a password against the stored hash.
-        
+
         Args:
             password: The plain text password to verify
-            
+
         Returns:
             bool: True if the password matches, False otherwise
         """
