@@ -14,7 +14,9 @@ if __name__ == "__main__":
     sys.exit(pytest.main([
         "--cov=app",
         "--cov-report=term-missing",
+        # Application initialization and structure
         "tests/test_app_init_enhanced.py",        # Enhanced app init tests
+        "tests/test_app_init.py",                 # Basic app init tests
         "tests/event/test_views.py",              # View tests
         "tests/event/test_jobs_comprehensive.py",  # Comprehensive jobs tests
         "tests/event/test_forms_validators.py",   # Forms validator tests
