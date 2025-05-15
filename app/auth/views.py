@@ -50,11 +50,8 @@ class LoginView(MethodView):
             user.update_last_login()
 
             next_page = request.args.get('next', '').replace('\\', '')  # Sanitize input
-            allowed_paths = [
-                url_for('items.all_events'),
-                url_for('items.some_other_page')
-            ]  # Dynamically generated whitelist of allowed paths
-            if next_page not in allowed_paths:
+            parsed_url = url_parse(next_page)
+            if parsed_url.netloc or parsed_url.scheme:  # Ensure it's a relative path
                 next_page = url_for('items.all_events')  # Default to a safe fallback
 
             return redirect(next_page)
