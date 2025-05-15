@@ -55,6 +55,9 @@ class LoginView(MethodView):
             next_page = request.args.get('next', '').replace('\\', '')  # Sanitize input
             parsed_url = url_parse(next_page)
 
+            # Normalize the path to prevent bypasses through encoding or unexpected characters
+            next_page = parsed_url.path
+
             # Validate that the next_page is a relative path and in the whitelist
             if parsed_url.netloc or parsed_url.scheme or next_page not in allowed_paths:
                 next_page = url_for('items.all_events')  # Default to a safe fallback
