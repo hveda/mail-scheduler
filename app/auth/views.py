@@ -4,6 +4,7 @@ from datetime import datetime, UTC
 from typing import Dict, Any, Union, Optional
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from werkzeug.urls import url_parse
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
@@ -48,9 +49,10 @@ class LoginView(MethodView):
             login_user(user, remember=form.remember_me.data)
             user.update_last_login()
 
-            next_page = request.args.get('next', '')
+            next_page = request.args.get('next', '').replace('\\', '')  # Sanitize input
             allowed_paths = ['/items/all_events', '/items/some_other_page']  # Whitelist of allowed paths
-            if next_page not in allowed_paths:
+            parsed_url = url_parse(next_page)
+            if next_page not in allowed_paths or parsed_url.netloc or parsed_url.scheme:
                 next_page = url_for('items.all_events')  # Default to a safe fallback
 
             return redirect(next_page)
