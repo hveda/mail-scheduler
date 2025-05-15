@@ -1,5 +1,9 @@
 name: Scheduled Tests
 
+permissions:
+  contents: read
+  statuses: write
+
 on:
   schedule:
     # Run weekly on Sunday at 1:00 AM UTC
