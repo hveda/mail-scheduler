@@ -109,3 +109,8 @@ venv.bak/
 *.sqlite
 *.db
 migrations/
+.vercel
+vercel-test-env/
+node_modules/
+package-lock.json
+package.json

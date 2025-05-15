@@ -3,11 +3,10 @@
 from datetime import datetime, UTC
 from typing import Dict, Any, Union, Optional
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import render_template, redirect, url_for, flash, request, current_app
 from werkzeug.urls import url_parse
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.urls import url_parse
 
 from app.database import db
 from app.auth.forms import LoginForm, RegistrationForm, UserEditForm, PasswordChangeForm
@@ -52,7 +51,8 @@ class LoginView(MethodView):
             # Define a whitelist of allowed relative paths
             allowed_paths = {'/items/all_events', '/profile', '/dashboard'}
 
-            next_page = request.args.get('next', '').replace('\\', '')  # Sanitize input
+            next_page = request.args.get('next', '').replace(
+                '\\', '')  # Sanitize input
             parsed_url = url_parse(next_page)
 
             # Normalize the path to prevent bypasses through encoding or unexpected characters
@@ -60,7 +60,8 @@ class LoginView(MethodView):
 
             # Validate that the next_page is a relative path and in the whitelist
             if parsed_url.netloc or parsed_url.scheme or next_page not in allowed_paths:
-                next_page = url_for('items.all_events')  # Default to a safe fallback
+                # Default to a safe fallback
+                next_page = url_for('items.all_events')
 
             return redirect(next_page)
 

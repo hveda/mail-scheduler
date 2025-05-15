@@ -53,7 +53,7 @@ def test_register_blueprints():
 
     # Check that register_blueprint was called with the API blueprint
     assert mock_app.register_blueprint.called
-    assert mock_app.register_blueprint.call_count == 1
+    assert mock_app.register_blueprint.call_count == 3
 
     # Check that the result is None
     assert result is None
