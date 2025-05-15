@@ -1,11 +1,12 @@
 """Base service classes for the application."""
+
 from abc import ABC, abstractmethod
-from typing import List, Optional, Any, Generic, TypeVar, Union
+from typing import Generic, List, Optional, TypeVar, Union
 
 from markupsafe import Markup
 
 # Define a generic type variable for our models
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class BaseService(ABC, Generic[T]):

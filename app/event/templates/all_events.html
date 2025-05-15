@@ -3,11 +3,11 @@
 {% block content %}
     <div class="container mt-4">
         <h1>Scheduled Emails</h1>
-        
+
         <div class="mb-3">
             <a href="{{ url_for('items.add_event') }}" class="btn btn-primary">Schedule New Email</a>
         </div>
-        
+
         {% if items %}
             <div class="table-responsive">
                 <table class="table table-striped table-hover">

@@ -1,16 +1,19 @@
 """Comprehensive tests for app/event/forms.py."""
+
 import pytest
-from app.event.forms import ItemsForm, EditItemsForm
 from wtforms.validators import DataRequired, Length
 
+from app.event.forms import EditItemsForm, ItemsForm
 
-def test_items_form_field_types():
+
+def test_items_form_field_types(app):
     """Test that ItemsForm has the correct field types and validators."""
-    form = ItemsForm()
+    with app.app_context():
+        form = ItemsForm()
 
     # Check field types
-    assert hasattr(form, 'name')
-    assert hasattr(form, 'notes')
+    assert hasattr(form, "name")
+    assert hasattr(form, "notes")
 
     # Check validators on name field
     validators = form.name.validators
@@ -24,13 +27,14 @@ def test_items_form_field_types():
     assert length_validators[0].max == 254
 
 
-def test_edit_items_form_field_types():
+def test_edit_items_form_field_types(app):
     """Test that EditItemsForm has the correct field types and validators."""
-    form = EditItemsForm()
+    with app.app_context():
+        form = EditItemsForm()
 
     # Check field types
-    assert hasattr(form, 'name')
-    assert hasattr(form, 'notes')
+    assert hasattr(form, "name")
+    assert hasattr(form, "notes")
 
     # Check validators on name field
     validators = form.name.validators
@@ -44,35 +48,39 @@ def test_edit_items_form_field_types():
     assert length_validators[0].max == 254
 
 
-def test_items_form_data_population():
+def test_items_form_data_population(app):
     """Test that ItemsForm correctly populates with data."""
-    test_data = {'name': 'Test Item', 'notes': 'Test Notes'}
-    form = ItemsForm(data=test_data)
+    test_data = {"name": "Test Item", "notes": "Test Notes"}
+    with app.app_context():
+        form = ItemsForm(data=test_data)
 
-    assert form.name.data == 'Test Item'
-    assert form.notes.data == 'Test Notes'
+    assert form.name.data == "Test Item"
+    assert form.notes.data == "Test Notes"
 
 
-def test_edit_items_form_data_population():
+def test_edit_items_form_data_population(app):
     """Test that EditItemsForm correctly populates with data."""
-    test_data = {'name': 'Test Item', 'notes': 'Test Notes'}
-    form = EditItemsForm(data=test_data)
+    test_data = {"name": "Test Item", "notes": "Test Notes"}
+    with app.app_context():
+        form = EditItemsForm(data=test_data)
 
-    assert form.name.data == 'Test Item'
-    assert form.notes.data == 'Test Notes'
+    assert form.name.data == "Test Item"
+    assert form.notes.data == "Test Notes"
 
 
-def test_items_form_csrf_protection():
+def test_items_form_csrf_protection(app):
     """Test that CSRF protection is enabled for ItemsForm."""
-    form = ItemsForm()
+    with app.app_context():
+        form = ItemsForm()
     # This accesses the internal Meta configuration
-    assert hasattr(form.Meta, 'csrf')
+    assert hasattr(form.Meta, "csrf")
     # Default is True if not specified
 
 
-def test_edit_items_form_csrf_protection():
+def test_edit_items_form_csrf_protection(app):
     """Test that CSRF protection is enabled for EditItemsForm."""
-    form = EditItemsForm()
+    with app.app_context():
+        form = EditItemsForm()
     # This accesses the internal Meta configuration
-    assert hasattr(form.Meta, 'csrf')
+    assert hasattr(form.Meta, "csrf")
     # Default is True if not specified

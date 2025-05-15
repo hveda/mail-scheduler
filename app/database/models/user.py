@@ -1,27 +1,31 @@
 """User model for authentication and authorization."""
 
-from datetime import datetime, UTC
-from typing import Optional
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.database import db
 
+if TYPE_CHECKING:
+    pass
 
-class User(db.Model, UserMixin):
+
+class User(db.Model, UserMixin):  # type: ignore[name-defined]
     """User model for authentication and authorization."""
 
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True,
-                         nullable=False, index=True)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    _password = db.Column('password_hash', db.String(256), nullable=False)
+    _password = db.Column("password_hash", db.String(256), nullable=False)
     first_name = db.Column(db.String(80), nullable=True)
     last_name = db.Column(db.String(80), nullable=True)
-    role = db.Column(db.String(20), default='user')  # 'admin', 'user', 'guest'
+    role = db.Column(db.String(20), default="user")  # 'admin', 'user', 'guest'
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     last_login = db.Column(db.DateTime, nullable=True)
@@ -29,7 +33,7 @@ class User(db.Model, UserMixin):
     @property
     def password(self) -> str:
         """Password property that raises an error when accessed."""
-        raise AttributeError('Password is not a readable attribute')
+        raise AttributeError("Password is not a readable attribute")
 
     @password.setter
     def password(self, password: str) -> None:
@@ -59,13 +63,17 @@ class User(db.Model, UserMixin):
     @property
     def full_name(self) -> str:
         """Get the user's full name."""
-        if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name}"
-        elif self.first_name:
-            return self.first_name
-        elif self.last_name:
-            return self.last_name
-        return self.username
+        first_name = str(self.first_name) if self.first_name else ""
+        last_name = str(self.last_name) if self.last_name else ""
+        username = str(self.username) if self.username else ""
+
+        if first_name and last_name:
+            return f"{first_name} {last_name}"
+        elif first_name:
+            return first_name
+        elif last_name:
+            return last_name
+        return username
 
     def update_last_login(self) -> None:
         """Update the user's last login time to the current time."""
@@ -74,8 +82,9 @@ class User(db.Model, UserMixin):
 
     def is_admin(self) -> bool:
         """Check if the user has admin role."""
-        return self.role == 'admin'
+        return bool(self.role == "admin") if self.role else False
 
     def __repr__(self) -> str:
         """String representation of the User model."""
-        return f"<User {self.username}>"
+        username = str(self.username) if self.username else "Unknown"
+        return f"<User {username}>"

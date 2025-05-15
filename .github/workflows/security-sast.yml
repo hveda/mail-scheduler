@@ -1,0 +1,226 @@
+name: Security Analysis (SAST)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run weekly security scans on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security-analysis:
+    name: Python Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "0.8.3"
+        enable-cache: true
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --extra dev
+
+    - name: Create security reports directory
+      run: mkdir -p security-reports
+
+    - name: Run Bandit security analysis
+      run: |
+        source .venv/bin/activate
+        echo "🔍 Running Bandit security analysis..."
+        bandit -r app/ -f json -o security-reports/bandit-report.json || true
+        bandit -r app/ -f txt -o security-reports/bandit-report.txt || true
+        echo "📊 Bandit analysis complete"
+      continue-on-error: true
+
+    - name: Run Safety vulnerability check
+      run: |
+        source .venv/bin/activate
+        echo "🔍 Running Safety vulnerability check..."
+        safety check --json --output security-reports/safety-report.json || true
+        safety check --output security-reports/safety-report.txt || true
+        echo "📊 Safety check complete"
+      continue-on-error: true
+
+    - name: Run Semgrep security analysis
+      run: |
+        source .venv/bin/activate
+        echo "🔍 Running Semgrep security analysis..."
+        semgrep --config=auto --json --output=security-reports/semgrep-report.json app/ || true
+        semgrep --config=auto --output=security-reports/semgrep-report.txt app/ || true
+        echo "📊 Semgrep analysis complete"
+      continue-on-error: true
+
+    - name: Run Pylint security checks
+      run: |
+        source .venv/bin/activate
+        echo "🔍 Running Pylint security checks..."
+        pylint app/ --load-plugins=pylint.extensions.security --output-format=json > security-reports/pylint-security.json || true
+        pylint app/ --load-plugins=pylint.extensions.security > security-reports/pylint-security.txt || true
+        echo "📊 Pylint security analysis complete"
+      continue-on-error: true
+
+    - name: Generate security summary
+      run: |
+        echo "📋 Generating security summary..."
+        python -c "
+        import json
+        import os
+
+        def load_json_safely(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    return json.load(f)
+            except:
+                return {}
+
+        # Load reports
+        bandit_report = load_json_safely('security-reports/bandit-report.json')
+        safety_report = load_json_safely('security-reports/safety-report.json')
+        semgrep_report = load_json_safely('security-reports/semgrep-report.json')
+
+        # Count issues
+        bandit_issues = len(bandit_report.get('results', []))
+        safety_issues = len(safety_report.get('vulnerabilities', []))
+        semgrep_issues = len(semgrep_report.get('results', []))
+
+        # Generate summary
+        with open('security-reports/security-summary.md', 'w') as f:
+            f.write('# Security Analysis Summary\n\n')
+            f.write(f'## Tool Results\n\n')
+            f.write(f'- **Bandit**: {bandit_issues} security issues found\n')
+            f.write(f'- **Safety**: {safety_issues} known vulnerabilities found\n')
+            f.write(f'- **Semgrep**: {semgrep_issues} security patterns found\n\n')
+
+            total_issues = bandit_issues + safety_issues + semgrep_issues
+
+            if total_issues == 0:
+                f.write('✅ **No security issues detected!**\n\n')
+            else:
+                f.write(f'⚠️  **Total security issues found: {total_issues}**\n\n')
+                f.write('Please review the detailed reports for more information.\n\n')
+
+            f.write('## Report Files\n\n')
+            f.write('- bandit-report.txt - Static security analysis\n')
+            f.write('- safety-report.txt - Known vulnerability check\n')
+            f.write('- semgrep-report.txt - Security pattern analysis\n')
+            f.write('- pylint-security.txt - Code quality security checks\n')
+
+        print('✅ Security summary generated')
+        "
+
+    - name: Display security summary
+      run: |
+        echo "📊 Security Analysis Results:"
+        echo "================================"
+        cat security-reports/security-summary.md
+
+    - name: Check for critical security issues
+      run: |
+        echo "🔍 Checking for critical security issues..."
+        python -c "
+        import json
+        import sys
+
+        def load_json_safely(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    return json.load(f)
+            except:
+                return {}
+
+        # Load reports
+        bandit_report = load_json_safely('security-reports/bandit-report.json')
+        semgrep_report = load_json_safely('security-reports/semgrep-report.json')
+
+        # Check for critical issues
+        critical_found = False
+
+        # Check Bandit for HIGH severity issues
+        for result in bandit_report.get('results', []):
+            if result.get('issue_severity') == 'HIGH':
+                print(f'🚨 Critical Bandit issue: {result.get(\"test_name\")} in {result.get(\"filename\")}')
+                critical_found = True
+
+        # Check Semgrep for critical patterns
+        for result in semgrep_report.get('results', []):
+            if result.get('extra', {}).get('severity') in ['ERROR', 'WARNING']:
+                print(f'🚨 Critical Semgrep issue: {result.get(\"check_id\")} in {result.get(\"path\")}')
+                critical_found = True
+
+        if critical_found:
+            print('❌ Critical security issues found! Please review and fix.')
+            # Don't fail the build, just warn
+            # sys.exit(1)
+        else:
+            print('✅ No critical security issues found!')
+        "
+
+    - name: Upload security reports as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: security-reports/
+        retention-days: 30
+      if: always()
+
+    - name: Comment on PR with security summary
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          try {
+            const summary = fs.readFileSync('security-reports/security-summary.md', 'utf8');
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Security Analysis Summary')
+            );
+
+            const commentBody = `## 🔒 Security Analysis Results\n\n${summary}\n\n---\n*This comment was automatically generated by the security analysis workflow.*`;
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+          } catch (error) {
+            console.log('Could not post security summary comment:', error.message);
+          }

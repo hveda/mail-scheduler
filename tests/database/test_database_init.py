@@ -1,6 +1,8 @@
 """Tests for database module."""
+
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from app.database import db, reset_database
 
@@ -8,11 +10,11 @@ from app.database import db, reset_database
 def test_db_exists():
     """Test that the db object exists."""
     assert db is not None
-    assert hasattr(db, 'session')
-    assert hasattr(db, 'Model')
+    assert hasattr(db, "session")
+    assert hasattr(db, "Model")
 
 
-@patch('app.database.db')
+@patch("app.database.db")
 def test_reset_database(mock_db):
     """Test the reset_database function."""
     # Call the function

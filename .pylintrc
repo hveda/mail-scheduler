@@ -1,0 +1,38 @@
+[MAIN]
+disable=
+    # Disabled rules that are too strict or not applicable
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    useless-object-inheritance,
+    useless-return,
+    unnecessary-pass,
+    import-outside-toplevel,
+    unused-argument,
+    arguments-renamed,
+    duplicate-code,
+    cyclic-import,
+    no-name-in-module,
+    consider-using-f-string,
+    consider-using-enumerate,
+    consider-using-with,
+    consider-using-dict-items,
+    too-many-positional-arguments,
+    no-else-return,
+    raise-missing-from
+
+# Output format
+output-format=colorized
+
+# Reports
+reports=no
+
+# Confidence level
+confidence=HIGH
+
+# Ignore paths
+ignore-paths=
+    tests/.*,
+    .venv/.*,
+    migrations/.*

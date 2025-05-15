@@ -8,8 +8,10 @@ when you encounter compatibility issues with SQLAlchemy in Python 3.13.
 from app import create_app
 from app.database import db
 from app.database.init_db import (
-    create_default_admin, create_test_user,
-    create_standard_users, create_sample_events
+    create_default_admin,
+    create_sample_events,
+    create_standard_users,
+    create_test_user,
 )
 
 # Create a Flask app instance

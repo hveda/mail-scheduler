@@ -5,8 +5,8 @@ from flask_rq2 import RQ
 
 # Initialize extensions
 login = LoginManager()
-login.login_view = 'auth.login'
-login.login_message = 'Please log in to access this page.'
+login.login_view = "auth.login"
+login.login_message = "Please log in to access this page."
 
 mail = Mail()
 migrate = Migrate()

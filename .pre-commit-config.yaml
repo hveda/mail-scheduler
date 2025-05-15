@@ -1,34 +1,40 @@
+# Pre-commit configuration to match GitHub workflow PR checks
+# Run: pre-commit install to enable hooks
+# Run: pre-commit run --all-files to check all files
+
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  # Built-in hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
-    -   id: debug-statements
-    -   id: check-merge-conflict
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
 
--   repo: https://github.com/psf/black
-    rev: 23.12.1
+  # Black code formatting
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
     hooks:
-    -   id: black
+      - id: black
         language_version: python3
+        args: [--line-length=88]
 
--   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.11
+  # isort import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
     hooks:
-    -   id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+      - id: isort
+        args: [--profile=black]
 
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+  # Flake8 linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
     hooks:
-    -   id: pyupgrade
-        args: [--py310-plus]
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203]
+        files: ^app/
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-    -   id: mypy
-        additional_dependencies: [types-requests, types-setuptools, types-python-dateutil, sqlalchemy-stubs]
+default_language_version:
+  python: python3

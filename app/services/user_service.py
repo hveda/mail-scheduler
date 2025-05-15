@@ -1,6 +1,10 @@
 """User service class implementation."""
 
-from typing import List, Dict, Any, Optional, Union
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Union, cast
+
+from markupsafe import Markup
 
 from app.database import db
 from app.database.models.user import User
@@ -18,7 +22,7 @@ class UserService(BaseService[User]):
         Returns:
             List of User objects
         """
-        return User.query.all()
+        return cast(List[User], User.query.all())
 
     @classmethod
     def get_by_id(cls, user_id: int) -> Optional[User]:
@@ -31,7 +35,7 @@ class UserService(BaseService[User]):
         Returns:
             User object if found, None otherwise
         """
-        return User.query.get(user_id)
+        return cast(Optional[User], User.query.get(user_id))
 
     @classmethod
     def get_by_username(cls, username: str) -> Optional[User]:
@@ -44,7 +48,7 @@ class UserService(BaseService[User]):
         Returns:
             User object if found, None otherwise
         """
-        return User.query.filter_by(username=username).first()
+        return cast(Optional[User], User.query.filter_by(username=username).first())
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
@@ -57,10 +61,10 @@ class UserService(BaseService[User]):
         Returns:
             User object if found, None otherwise
         """
-        return User.query.filter_by(email=email).first()
+        return cast(Optional[User], User.query.filter_by(email=email).first())
 
     @classmethod
-    def create(cls, data: Dict[str, Any]) -> Union[int, str]:
+    def create(cls, data: Dict[str, Any]) -> Union[int, Markup]:
         """
         Create a new user.
 
@@ -73,29 +77,36 @@ class UserService(BaseService[User]):
         Raises:
             ValueError: If the user cannot be created
         """
-        if cls.get_by_username(data.get('username')):
-            raise ValueError(
-                f"Username '{data.get('username')}' is already taken")
+        username = data.get("username")
+        email = data.get("email")
 
-        if cls.get_by_email(data.get('email')):
-            raise ValueError(f"Email '{data.get('email')}' is already taken")
+        if not username or not isinstance(username, str):
+            raise ValueError("Username is required and must be a string")
+        if not email or not isinstance(email, str):
+            raise ValueError("Email is required and must be a string")
+
+        if cls.get_by_username(username):
+            raise ValueError(f"Username '{username}' is already taken")
+
+        if cls.get_by_email(email):
+            raise ValueError(f"Email '{email}' is already taken")
 
         user = User(
-            username=data.get('username'),
-            email=data.get('email'),
-            first_name=data.get('first_name', ''),
-            last_name=data.get('last_name', ''),
-            role=data.get('role', 'user')
+            username=username,
+            email=email,
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", ""),
+            role=data.get("role", "user"),
         )
 
         # Set password if provided
-        if 'password' in data:
-            user.password = data['password']
+        if "password" in data:
+            user.password = data["password"]
 
         db.session.add(user)
         db.session.commit()
 
-        return user.id
+        return cast(int, user.id)
 
     @classmethod
     def update(cls, user_id: int, data: Dict[str, Any]) -> bool:
@@ -117,21 +128,20 @@ class UserService(BaseService[User]):
             raise ValueError(f"User with ID {user_id} not found")
 
         # Check username uniqueness if changed
-        if 'username' in data and data['username'] != user.username:
-            existing_user = cls.get_by_username(data['username'])
+        if "username" in data and data["username"] != user.username:
+            existing_user = cls.get_by_username(data["username"])
             if existing_user and existing_user.id != user_id:
-                raise ValueError(
-                    f"Username '{data['username']}' is already taken")
+                raise ValueError(f"Username '{data['username']}' is already taken")
 
         # Check email uniqueness if changed
-        if 'email' in data and data['email'] != user.email:
-            existing_user = cls.get_by_email(data['email'])
+        if "email" in data and data["email"] != user.email:
+            existing_user = cls.get_by_email(data["email"])
             if existing_user and existing_user.id != user_id:
                 raise ValueError(f"Email '{data['email']}' is already taken")
 
         # Update fields
         for key, value in data.items():
-            if key == 'password':
+            if key == "password":
                 user.password = value
             elif hasattr(user, key):
                 setattr(user, key, value)

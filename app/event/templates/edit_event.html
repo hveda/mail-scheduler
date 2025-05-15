@@ -5,7 +5,7 @@
         <h1>Edit Scheduled Email</h1>
         <form method="POST">
             {{ form.csrf_token }}
-            
+
             <div class="mb-3">
                 <label for="name" class="form-label">{{ form.name.label }}</label>
                 {{ form.name(class="form-control", value=event.email_subject) }}
@@ -17,7 +17,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="recipients" class="form-label">{{ form.recipients.label }}</label>
                 {{ form.recipients(class="form-control", placeholder="email1@example.com, email2@example.com") }}
@@ -30,10 +30,10 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="schedule_time" class="form-label">{{ form.schedule_time.label }}</label>
-                <input type="datetime-local" name="schedule_time" class="form-control" 
+                <input type="datetime-local" name="schedule_time" class="form-control"
                        id="schedule_time" required value="{{ event.timestamp.strftime('%Y-%m-%dT%H:%M') }}">
                 <small class="form-text text-muted">{{ form.schedule_time.description }}</small>
                 {% if form.schedule_time.errors %}
@@ -44,7 +44,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             <div class="mb-3">
                 <label for="notes" class="form-label">{{ form.notes.label }}</label>
                 {{ form.notes(class="form-control", rows=5, value=event.email_content) }}
@@ -56,7 +56,7 @@
                     </div>
                 {% endif %}
             </div>
-            
+
             {% if event.is_done %}
             <div class="mb-3">
                 <div class="alert alert-warning">
@@ -64,7 +64,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <div class="mb-3">
                 <button type="submit" class="btn btn-primary">Update Email</button>
                 <a href="{{ url_for('items.all_events') }}" class="btn btn-secondary">Cancel</a>

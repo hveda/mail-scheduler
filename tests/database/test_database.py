@@ -1,18 +1,21 @@
 """Tests for database module."""
-import pytest
+
 from unittest.mock import patch
+
+import pytest
 
 
 def test_db_object():
     """Test database object initialization."""
     from app.database import db
+
     assert db is not None
-    assert hasattr(db, 'Model')
-    assert hasattr(db, 'session')
+    assert hasattr(db, "Model")
+    assert hasattr(db, "session")
 
 
-@patch('app.database.db.drop_all')
-@patch('app.database.db.create_all')
+@patch("app.database.db.drop_all")
+@patch("app.database.db.create_all")
 def test_reset_database(mock_create_all, mock_drop_all):
     """Test reset_database function."""
     from app.database import reset_database

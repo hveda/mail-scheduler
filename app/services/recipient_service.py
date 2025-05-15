@@ -1,11 +1,15 @@
 """Recipient service class implementation."""
-from typing import List, Dict, Any, Optional, Union
 
-from flask import Markup
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Union, cast
+
+from markupsafe import Markup
 
 from app.database import db
-from app.database.models import Recipient, Event
+from app.database.models import Recipient
 from app.services.base import BaseService
+from app.utils.security import safe_error_message
 
 
 class RecipientService(BaseService[Recipient]):
@@ -19,7 +23,7 @@ class RecipientService(BaseService[Recipient]):
         Returns:
             List of Recipient objects
         """
-        return Recipient.query.all()
+        return cast(List[Recipient], Recipient.query.all())
 
     @classmethod
     def get_by_id(cls, item_id: int) -> Optional[Recipient]:
@@ -32,7 +36,7 @@ class RecipientService(BaseService[Recipient]):
         Returns:
             Recipient object if found, None otherwise
         """
-        return Recipient.query.get(item_id)
+        return cast(Optional[Recipient], Recipient.query.get(item_id))
 
     @classmethod
     def get_by_event_id(cls, event_id: int) -> List[Recipient]:
@@ -45,7 +49,7 @@ class RecipientService(BaseService[Recipient]):
         Returns:
             List of Recipient objects for the event
         """
-        return Recipient.query.filter_by(event_id=event_id).all()
+        return cast(List[Recipient], Recipient.query.filter_by(event_id=event_id).all())
 
     @classmethod
     def create(cls, data: Dict[str, Any]) -> Union[int, Markup]:
@@ -61,19 +65,19 @@ class RecipientService(BaseService[Recipient]):
         try:
             # Create a new recipient object
             new_recipient = Recipient(
-                name=data.get('name', ''),
-                email=data.get('email', ''),
-                event_id=data.get('event_id')
+                name=data.get("name", ""),
+                email=data.get("email", ""),
+                event_id=data.get("event_id"),
             )
 
             # Save to database
             db.session.add(new_recipient)
             db.session.commit()
 
-            return new_recipient.id
+            return cast(int, new_recipient.id)
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to add recipient: {str(e)}")
+            return safe_error_message(e)
 
     @classmethod
     def update(cls, item_id: int, data: Dict[str, Any]) -> Union[bool, Markup]:
@@ -93,19 +97,19 @@ class RecipientService(BaseService[Recipient]):
                 return Markup("<strong>Error!</strong> Recipient does not exist.")
 
             # Update recipient attributes
-            if 'name' in data:
-                recipient.name = data['name']
-            if 'email' in data:
-                recipient.email = data['email']
-            if 'event_id' in data:
-                recipient.event_id = data['event_id']
+            if "name" in data:
+                recipient.name = data["name"]
+            if "email" in data:
+                recipient.email = data["email"]
+            if "event_id" in data:
+                recipient.event_id = data["event_id"]
 
             # Save changes
             db.session.commit()
             return True
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to update recipient: {str(e)}")
+            return safe_error_message(e)
 
     @classmethod
     def delete(cls, item_id: int) -> Union[bool, Markup]:
@@ -129,10 +133,12 @@ class RecipientService(BaseService[Recipient]):
             return True
         except Exception as e:
             db.session.rollback()
-            return Markup(f"<strong>Error!</strong> Unable to delete recipient: {str(e)}")
+            return safe_error_message(e)
 
     @classmethod
-    def bulk_create(cls, recipients: List[Dict[str, Any]], event_id: int) -> Union[int, Markup]:
+    def bulk_create(
+        cls, recipients: List[Dict[str, Any]], event_id: int
+    ) -> Union[int, Markup]:
         """
         Create multiple recipients for an event.
 
@@ -147,11 +153,11 @@ class RecipientService(BaseService[Recipient]):
             count = 0
             for recipient_data in recipients:
                 # Add event_id to each recipient
-                recipient_data['event_id'] = event_id
+                recipient_data["event_id"] = event_id
                 result = cls.create(recipient_data)
                 if isinstance(result, int):
                     count += 1
 
             return count
         except Exception as e:
-            return Markup(f"<strong>Error!</strong> Unable to add recipients: {str(e)}")
+            return safe_error_message(e)

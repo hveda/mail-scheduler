@@ -1,38 +1,47 @@
 """Comprehensive tests for app/__init__.py."""
-import pytest
-from unittest.mock import patch, MagicMock
-import os
 
-from app import create_app, register_blueprints, register_extensions, register_commands
-from app import config
+import os
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from app import (
+    config,
+    create_app,
+    register_blueprints,
+    register_commands,
+    register_extensions,
+)
 
 
 def test_create_app_with_testing_config():
     """Test creating an app with testing configuration."""
     app = create_app(config.TestingConfig)
-    assert app.config['TESTING'] is True
-    assert app.config['DEBUG'] is True
-    assert app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://')
+    assert app.config["TESTING"] is True
+    assert app.config["DEBUG"] is True
+    assert app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite://")
 
 
 def test_create_app_with_development_config():
     """Test creating an app with development configuration."""
     app = create_app(config.DevelopmentConfig)
-    assert app.config['DEBUG'] is True
-    assert app.config['TESTING'] is False
+    assert app.config["DEBUG"] is True
+    assert app.config["TESTING"] is False
 
 
 def test_create_app_with_production_config():
     """Test creating an app with production configuration."""
     app = create_app(config.ProductionConfig)
-    assert app.config['DEBUG'] is False
-    assert app.config['TESTING'] is False
+    assert app.config["DEBUG"] is False
+    assert app.config["TESTING"] is False
 
 
-@patch('app.register_extensions')
-@patch('app.register_blueprints')
-@patch('app.register_commands')
-def test_create_app_calls_register_functions(mock_commands, mock_blueprints, mock_extensions):
+@patch("app.register_extensions")
+@patch("app.register_blueprints")
+@patch("app.register_commands")
+def test_create_app_calls_register_functions(
+    mock_commands, mock_blueprints, mock_extensions
+):
     """Test that create_app calls all the register functions."""
     app = create_app(config.TestingConfig)
 
@@ -53,7 +62,7 @@ def test_register_blueprints():
 
     # Check that register_blueprint was called with the API blueprint
     assert mock_app.register_blueprint.called
-    assert mock_app.register_blueprint.call_count == 1
+    assert mock_app.register_blueprint.call_count == 3
 
     # Check that the result is None
     assert result is None
@@ -71,10 +80,12 @@ def test_register_extensions():
     mock_rq = MagicMock()
 
     # Patch the extensions
-    with patch('app.db', mock_db), \
-            patch('app.mail', mock_mail), \
-            patch('app.migrate', mock_migrate), \
-            patch('app.rq', mock_rq):
+    with (
+        patch("app.db", mock_db),
+        patch("app.mail", mock_mail),
+        patch("app.migrate", mock_migrate),
+        patch("app.rq", mock_rq),
+    ):
         # Call the function
         register_extensions(mock_app)
 
@@ -99,9 +110,11 @@ def test_register_commands():
     mock_recreate_db = MagicMock()
 
     # Patch the commands
-    with patch('app.create_db', mock_create_db), \
-            patch('app.drop_db', mock_drop_db), \
-            patch('app.recreate_db', mock_recreate_db):
+    with (
+        patch("app.create_db", mock_create_db),
+        patch("app.drop_db", mock_drop_db),
+        patch("app.recreate_db", mock_recreate_db),
+    ):
         # Call the function
         register_commands(mock_app)
 

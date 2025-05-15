@@ -2,33 +2,43 @@
 
 This module contains the Event and Recipient models.
 """
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Optional
+
 from app.database import db
-from datetime import datetime, UTC
-from typing import Optional, List
+
+if TYPE_CHECKING:
+    pass
 
 
-class Event(db.Model):
+class Event(db.Model):  # type: ignore[name-defined]
     """Event model for scheduled emails."""
 
-    __tablename__ = 'events'
+    __tablename__ = "events"
 
     id = db.Column(db.Integer, primary_key=True)
-    _email_subject = db.Column('email_subject', db.String, nullable=False)
-    _email_content = db.Column('email_content', db.String)
+    _email_subject = db.Column("email_subject", db.String, nullable=False)
+    _email_content = db.Column("email_content", db.String)
     timestamp = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           default=lambda: datetime.now(UTC))
-    _is_done = db.Column('is_done', db.Boolean, nullable=False, default=False)
+    created_at = db.Column(
+        db.DateTime, nullable=False, default=lambda: datetime.now(UTC)
+    )
+    _is_done = db.Column("is_done", db.Boolean, nullable=False, default=False)
     done_at = db.Column(db.DateTime, nullable=True)
-    recipients = db.relationship('Recipient', backref='event', lazy='dynamic')
+    recipients = db.relationship("Recipient", backref="event", lazy="dynamic")
 
-    def __init__(self,
-                 email_subject: str,
-                 email_content: str,
-                 timestamp: datetime,
-                 created_at: Optional[datetime] = None,
-                 is_done: Optional[bool] = False,
-                 done_at: Optional[datetime] = None) -> None:
+    def __init__(
+        self,
+        email_subject: str,
+        email_content: str,
+        timestamp: datetime,
+        created_at: Optional[datetime] = None,
+        is_done: bool = False,
+        done_at: Optional[datetime] = None,
+    ) -> None:
         """
         Initialize an Event instance.
 
@@ -51,7 +61,7 @@ class Event(db.Model):
     @property
     def email_subject(self) -> str:
         """Get the email subject."""
-        return self._email_subject
+        return str(self._email_subject) if self._email_subject else ""
 
     @email_subject.setter
     def email_subject(self, value: str) -> None:
@@ -61,7 +71,7 @@ class Event(db.Model):
     @property
     def email_content(self) -> str:
         """Get the email content."""
-        return self._email_content
+        return str(self._email_content) if self._email_content else ""
 
     @email_content.setter
     def email_content(self, value: str) -> None:
@@ -71,7 +81,7 @@ class Event(db.Model):
     @property
     def is_done(self) -> bool:
         """Check if the event is done."""
-        return self._is_done
+        return bool(self._is_done) if self._is_done is not None else False
 
     @is_done.setter
     def is_done(self, value: bool) -> None:
@@ -85,18 +95,22 @@ class Event(db.Model):
         return f"<Event {self.id}: {self.email_subject}>"
 
 
-class Recipient(db.Model):
+class Recipient(db.Model):  # type: ignore[name-defined]
     """Recipient model for event recipients."""
 
-    __tablename__ = 'recipients'
+    __tablename__ = "recipients"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, nullable=False)
     name = db.Column(db.String)
-    event_id = db.Column(db.Integer, db.ForeignKey(
-        'events.id'), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
 
-    def __init__(self, email: str, name: Optional[str] = None, event_id: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        email: str,
+        name: Optional[str] = None,
+        event_id: Optional[int] = None,
+    ) -> None:
         """
         Initialize a Recipient instance.
 

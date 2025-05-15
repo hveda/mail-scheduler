@@ -8,7 +8,7 @@ Mail Scheduler Documentation
 
 Welcome to the Mail Scheduler API documentation.
 
-Mail Scheduler is an automated email sending application using Flask-Mail and RQ for asynchronous job scheduling. 
+Mail Scheduler is an automated email sending application using Flask-Mail and RQ for asynchronous job scheduling.
 It provides a RESTful API for scheduling emails to be sent at specific times.
 
 Features
@@ -27,4 +27,3 @@ Features
    api
    architecture
    modules
-

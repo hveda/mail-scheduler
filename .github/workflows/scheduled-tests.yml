@@ -28,7 +28,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      
+
       redis:
         image: redis:7-alpine
         ports:
@@ -45,13 +45,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -59,12 +59,12 @@ jobs:
         pip install pytest pytest-cov
         pip install markupsafe
         pip install -e .
-    
+
     - name: Lint with flake8
       run: |
         pip install flake8
         flake8 app tests --count --statistics
-    
+
     - name: Run comprehensive tests
       env:
         FLASK_APP: serve.py
@@ -80,13 +80,13 @@ jobs:
       run: |
         # Run the full test suite with coverage
         pytest --cov=app --cov-report=xml
-    
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         fail_ci_if_error: false
-    
+
     - name: Check for warnings and deprecation
       run: |
         # Run tests and capture all warnings
