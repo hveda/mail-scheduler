@@ -17,8 +17,11 @@ if __name__ == "__main__":
         # Application initialization and structure
         "tests/test_app_init_enhanced.py",        # Enhanced app init tests
         "tests/test_app_init.py",                 # Basic app init tests
+        
+        # Event module tests
         "tests/event/test_views.py",              # View tests
-        "tests/event/test_jobs_comprehensive.py",  # Comprehensive jobs tests
+        "tests/event/test_jobs_comprehensive.py", # Comprehensive jobs tests
+        "tests/event/test_jobs_enhanced.py",      # Enhanced jobs tests
         "tests/event/test_forms_validators.py",   # Forms validator tests
         "tests"                                   # Run all remaining tests
     ]))
