@@ -21,7 +21,6 @@ if __name__ == "__main__":
         # Event module tests
         "tests/event/test_views.py",              # View tests
         "tests/event/test_jobs_comprehensive.py", # Comprehensive jobs tests
-        "tests/event/test_jobs_enhanced.py",      # Enhanced jobs tests
         "tests/event/test_forms_validators.py",   # Forms validator tests
         "tests"                                   # Run all remaining tests
     ]))

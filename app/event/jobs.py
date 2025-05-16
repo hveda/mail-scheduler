@@ -38,8 +38,8 @@ def add_recipients(data: str, event_id: int) -> List[str]:
                 name = parts[0].strip()
                 email = parts[1].split('>')[0].strip()
 
-        # Create a new Recipient - using positional arguments
-        recipient = Recipient(email, event_id, name, False, None)
+        # Create a new Recipient - using correct parameter order
+        recipient = Recipient(email_address=email, event_id=event_id, name=name, is_sent=False, sent_at=None)
         db.session.add(recipient)
         db.session.commit()
     return mail_addr

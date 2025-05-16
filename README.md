@@ -15,6 +15,7 @@ An automated mail sender using Flask-Mail and asynchronous job scheduling with R
 - Created new API endpoints for retrieving scheduled emails
 - Added Swagger UI improvements with better response models
 - Implemented GitHub Actions for automated testing and CI/CD
+- Added Vercel deployment support for serverless hosting options
 
 ## Continuous Integration
 
@@ -94,6 +95,20 @@ Create the database tables:
 ```bash
 docker-compose exec app flask create_db
 ```
+
+### Vercel Serverless Deployment
+
+For serverless deployment on Vercel:
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to Vercel
+vercel
+```
+
+For more details, see the [Vercel Deployment Guide](VERCEL_DEPLOYMENT.md).
 
 ## Documentation
 

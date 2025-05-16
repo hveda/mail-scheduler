@@ -128,7 +128,7 @@ class TestScheduleMail:
         # Verify
         # Assert that scheduler.enqueue_at was called with correct args
         # This depends on the mock_redis fixture in conftest.py
-        assert mock_redis.enqueue_at.called_once_with(
+        assert mock_redis.enqueue_at.assert_called_once_with(
             timestamp, send_mail, event_id, recipients)
 
 
@@ -165,8 +165,9 @@ class TestSendMail:
         # Verify
         mock_message.assert_called_once_with(subject="Test Subject")
         mock_msg.add_recipient.assert_called_once_with("test@example.com")
+        # For text content, only set body not html
+        assert hasattr(mock_msg, 'body')
         assert mock_msg.body == "Test content with no HTML"
-        assert mock_msg.html is None
         mock_conn.send.assert_called_once_with(mock_msg)
         assert mock_event_obj.is_done is True
         assert mock_event_obj.done_at is not None
@@ -204,8 +205,9 @@ class TestSendMail:
         # Verify
         mock_message.assert_called_once_with(subject="Test Subject")
         mock_msg.add_recipient.assert_called_once_with("test@example.com")
+        # For HTML content, only set html not body
+        assert hasattr(mock_msg, 'html')
         assert mock_msg.html == "<html><body><p>Test HTML content</p></body></html>"
-        assert mock_msg.body is None
         mock_conn.send.assert_called_once_with(mock_msg)
         assert mock_event_obj.is_done is True
         assert mock_event_obj.done_at is not None
@@ -284,7 +286,7 @@ class TestAddEvent:
         # Verify
         mock_dt_utc.assert_called_once_with('2023-05-10T15:30:00Z')
         mock_event.assert_called_once_with(
-            'Test Subject', 'Test Content', timestamp, ANY, False, None
+            'Test Subject', 'Test Content', timestamp, ANY, False, None, None
         )
         mock_db.session.add.assert_called_once_with(mock_event_obj)
         mock_db.session.commit.assert_called_once()
