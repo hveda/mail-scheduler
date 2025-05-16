@@ -2,6 +2,9 @@
 import os
 from app.config import Config, ProductionConfig
 
+# Set Vercel environment variable
+os.environ['VERCEL'] = '1'
+
 class VercelConfig(ProductionConfig):
     """Configuration for Vercel deployment."""
     # Use SQLite for Vercel deployment
@@ -9,6 +12,9 @@ class VercelConfig(ProductionConfig):
     
     # Disable Redis Queue for Vercel
     RQ_ASYNC = False
+    
+    # Redis is not available in Vercel serverless
+    RQ_REDIS_URL = None
     
     # Security configurations
     SESSION_COOKIE_SECURE = True

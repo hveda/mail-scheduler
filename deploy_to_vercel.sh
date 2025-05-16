@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to deploy to Vercel
+# Script to deploy simplified Flask app to Vercel
 
 # Check if Vercel CLI is installed
 if ! command -v vercel &> /dev/null; then
@@ -26,6 +26,12 @@ MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-mail-scheduler@example.com}
 read -p "Use TLS for email? (True/False, default: True): " MAIL_USE_TLS
 MAIL_USE_TLS=${MAIL_USE_TLS:-True}
 
+# Generate a random 32 character string if no SECRET_KEY is provided
+if [ -z "$SECRET_KEY" ]; then
+    SECRET_KEY=$(openssl rand -hex 16)
+    echo "Generated random SECRET_KEY: $SECRET_KEY"
+fi
+
 # Deploy to Vercel with environment variables
 echo "Deploying to Vercel..."
 vercel \
@@ -36,6 +42,7 @@ vercel \
   --env MAIL_PASSWORD="$MAIL_PASSWORD" \
   --env MAIL_DEFAULT_SENDER="$MAIL_DEFAULT_SENDER" \
   --env MAIL_USE_TLS="$MAIL_USE_TLS" \
-  --env VERCEL="1"
+  --env VERCEL="1" \
+  --prod
 
 echo "Deployment complete! Your application is now available on Vercel."

@@ -2,10 +2,34 @@
 
 This guide provides instructions for deploying the Mail Scheduler application to Vercel.
 
+## Important Notes About Vercel Deployment
+
+### Simplified Version for Vercel
+
+Due to limitations with Redis and background job processing in serverless environments, we're using a simplified version of the Mail Scheduler application for Vercel deployment. This version:
+
+- Uses SQLite instead of PostgreSQL
+- Doesn't include Redis/RQ functionality
+- Provides basic API endpoints but not the full scheduling capability
+- Uses minimal dependencies to avoid conflicts
+
+### Dependency Considerations
+
+The main application has some conflicting dependencies:
+
+- `flask-restx 1.2.0` requires `Werkzeug<3.0.0`
+- `Flask 2.3.2` requires `Werkzeug>=2.3.3`
+- `pkg_resources` from setuptools is required by Flask-RQ2
+
+The simplified Vercel deployment resolves these issues by:
+1. Using direct dependency installation in vercel.json
+2. Using a standalone Flask application in api/vercel_app.py
+3. Removing Redis/RQ dependencies entirely
+
 ## Prerequisites
 
 1. A [Vercel account](https://vercel.com/signup)
-2. [Vercel CLI](https://vercel.com/docs/cli) installed (optional for CLI deployment)
+2. [Vercel CLI](https://vercel.com/docs/cli) installed for CLI deployment
 3. Git repository with your Mail Scheduler code
 
 ## Important Dependency Notice

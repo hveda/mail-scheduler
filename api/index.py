@@ -1,11 +1,8 @@
-from app import create_app
-from app.vercel_config import VercelConfig
+# Use a completely simplified app directly defined in vercel_app.py
+from api.vercel_app import app
 
-# Import necessary modules
-from flask import redirect, url_for, jsonify
-
-# Create the Flask application instance using Vercel specific config
-app = create_app(VercelConfig)
+# For Vercel serverless deployment
+handler = app
 
 
 @app.route('/')

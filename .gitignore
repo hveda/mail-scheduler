@@ -110,3 +110,6 @@ venv.bak/
 *.db
 migrations/
 .vercel
+node_modules/
+vercel-test-env/
+package*
