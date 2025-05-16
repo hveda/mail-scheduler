@@ -8,6 +8,20 @@ This guide provides instructions for deploying the Mail Scheduler application to
 2. [Vercel CLI](https://vercel.com/docs/cli) installed (optional for CLI deployment)
 3. Git repository with your Mail Scheduler code
 
+## Important Dependency Notice
+
+This project has specific dependency constraints:
+
+- `flask-restx 1.2.0` requires `Werkzeug<3.0.0`
+- `Flask 2.3.2` requires `Werkzeug>=2.3.3`
+
+The `requirements-vercel.txt` file has been configured to resolve this conflict by using:
+```
+Werkzeug<3.0.0,>=2.3.3
+```
+
+If you encounter dependency conflicts during deployment, check that this constraint is properly set in both `requirements.txt` and `requirements-vercel.txt`.
+
 ## Deployment Steps
 
 ### Option 1: Deploy with Vercel CLI
