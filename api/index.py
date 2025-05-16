@@ -1,4 +1,4 @@
-# Use a completely simplified app directly defined in vercel_app.py
+# Use a simplified app directly defined in vercel_app.py that connects to PostgreSQL
 from api.vercel_app import app
 
 # For Vercel serverless deployment

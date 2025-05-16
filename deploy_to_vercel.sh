@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to deploy simplified Flask app to Vercel
+# Script to deploy simplified Flask app to Vercel with PostgreSQL support
 
 # Check if Vercel CLI is installed
 if ! command -v vercel &> /dev/null; then
@@ -11,6 +11,22 @@ fi
 # Login if needed
 echo "Checking Vercel login status..."
 vercel whoami &>/dev/null || vercel login
+
+# Check for existing Postgres database
+if [ -f .env.development.local ]; then
+    echo "Found existing Postgres configuration in .env.development.local"
+    echo "Using the existing PostgreSQL database"
+else
+    echo "No Postgres configuration found. Creating a new database..."
+    vercel env pull .env.development.local
+    
+    if [ -f .env.development.local ]; then
+        echo "Created and downloaded environment variables"
+    else
+        echo "Failed to create database or pull environment variables"
+        echo "Will continue but may use SQLite instead"
+    fi
+fi
 
 # Prompt for environment variables
 read -p "Enter your SECRET_KEY for the application: " SECRET_KEY
@@ -46,3 +62,6 @@ vercel \
   --prod
 
 echo "Deployment complete! Your application is now available on Vercel."
+echo 
+echo "To verify your database connection, visit your Vercel deployment URL at /api/health"
+echo "You should see a response indicating whether the database is connected."

@@ -4,11 +4,21 @@ This guide provides instructions for deploying the Mail Scheduler application to
 
 ## Important Notes About Vercel Deployment
 
+### Database Integration
+
+The application is configured to work with Vercel's PostgreSQL databases. When you deploy, Vercel automatically:
+
+1. Creates a PostgreSQL database (if not already created)
+2. Adds the database connection information to environment variables
+3. Connects your application to the database
+
+To check if your database is properly connected, visit `/api/health` after deployment.
+
 ### Simplified Version for Vercel
 
 Due to limitations with Redis and background job processing in serverless environments, we're using a simplified version of the Mail Scheduler application for Vercel deployment. This version:
 
-- Uses SQLite instead of PostgreSQL
+- Uses PostgreSQL instead of SQLite
 - Doesn't include Redis/RQ functionality
 - Provides basic API endpoints but not the full scheduling capability
 - Uses minimal dependencies to avoid conflicts

@@ -13,20 +13,19 @@ pip --version
 echo "Dependencies installed:"
 pip list
 
-# Create a dummy setup for missing packages
-cat > setuptools_mock.py << EOF
-import sys
-class MockPackage:
-    def __getattr__(self, name): return lambda *args, **kwargs: None
-sys.modules['pkg_resources'] = MockPackage()
-sys.modules['flask_rq2'] = MockPackage()
-sys.modules['redis'] = MockPackage()
-sys.modules['rq'] = MockPackage()
-EOF
+# Check for database URL
+if [ -n "$mail_scheduler_DATABASE_URL" ]; then
+    echo "PostgreSQL database detected"
+    # Install psycopg2 for PostgreSQL support
+    pip install psycopg2-binary==2.9.9
+    echo "PostgreSQL driver installed"
+else
+    echo "No PostgreSQL database detected, using SQLite"
+fi
 
-# Create the database
+# Create the database schema
 echo "Setting up database..."
-python -c "import setuptools_mock; from app.vercel_config import VercelConfig; from app.vercel_app import create_app; from app.database import db; app = create_app(VercelConfig); app.app_context().push(); db.create_all()"
+python -c "from api.vercel_app import app, db; with app.app_context(): db.create_all(); print('Database schema created successfully')"
 
 # Print success message
 echo "Build completed successfully"
