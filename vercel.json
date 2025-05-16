@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "serve.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "25mb", "runtime": "python3.11" }
+    },
+    {
+      "src": "api/cron_dispatcher.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "25mb", "runtime": "python3.11" }
+    }
+  ],
+  "routes": [
+    { "src": "/api/health", "dest": "serve.py" },
+    { "src": "/api/save_emails", "dest": "serve.py" },
+    { "src": "/api/events", "dest": "serve.py" },
+    { "src": "/api/events/(?<id>[^/]+)", "dest": "serve.py" },
+    { "src": "/api-docs", "dest": "serve.py" },
+    { "src": "/api/doc", "dest": "serve.py" },
+    { "src": "/debug", "dest": "serve.py" },
+    {
+      "src": "/api/run_cron_dispatcher", // An endpoint to manually trigger cron for testing
+      "dest": "api/cron_dispatcher.py"
+    },
+    { "src": "/", "dest": "serve.py" }
+  ],
+  "crons": [
+    {
+      "path": "/api/run_cron_dispatcher", // This path should trigger your cron_dispatcher.py
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "env": {
+    "FLASK_APP": "serve.py",
+    "APP_SETTINGS": "app.config.ProductionConfig",
+    "PYTHONPATH": "/var/task/app:/var/task", // Ensure 'app' module and others are found
+    "MAIL_SERVER": "smtp.example.com", // Placeholder
+    "MAIL_PORT": "587", // Placeholder
+    "MAIL_USE_TLS": "true", // Placeholder
+    "MAIL_USERNAME": "@mail_username",
+    "MAIL_PASSWORD": "@mail_password",
+    "MAIL_DEFAULT_SENDER": "@mail_default_sender",
+    "SECRET_KEY": "@secret_key",
+    "DATABASE_URL": "@database_url", // Will come from Vercel Postgres or other provider
+    "FLASK_DEBUG": "0"
+  }
+}

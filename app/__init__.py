@@ -4,8 +4,8 @@ from flask import Flask
 from app import config
 from app.api import blueprint as api
 from app.commands import create_db, drop_db, recreate_db
-from app.database import db
-from app.extensions import mail, migrate, rq, login
+from app.database import db  # db object should have inspect after init_app
+from app.extensions import mail, migrate, login  # Removed rq
 
 
 def create_app(conf=config.Config):
@@ -13,10 +13,28 @@ def create_app(conf=config.Config):
     app = Flask(__name__)
     app.config.from_object(conf)
 
+    # Extensions (like db) must be registered before use
     register_extensions(app)
     register_blueprints(app)
     register_commands(app)
     configure_login(app)
+
+    # Create database tables if they don't exist
+    # This is useful for the first Vercel deployment
+    with app.app_context():
+        inspector = db.inspect(db.engine)
+        # Check for a couple of key tables.
+        # Adjust if your main tables are different.
+        # Assuming 'user_account' is from User model, 'event' from Event model
+        user_table_exists = inspector.has_table("user_account")
+        event_table_exists = inspector.has_table("event")
+
+        if not (user_table_exists and event_table_exists):
+            print("One or more key database tables not found, creating all...")
+            db.create_all()
+            print("Database tables created.")
+        else:
+            print("Key database tables (user_account, event) found.")
 
     return app
 
@@ -41,7 +59,7 @@ def register_extensions(app):
     db.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
-    rq.init_app(app)
+    # rq.init_app(app)  # Removed RQ initialization
     login.init_app(app)
 
     return None
