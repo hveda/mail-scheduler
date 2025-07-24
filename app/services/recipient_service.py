@@ -1,7 +1,7 @@
 """Recipient service class implementation."""
 from typing import List, Dict, Any, Optional, Union
 
-from flask import Markup
+from markupsafe import Markup
 
 from app.database import db
 from app.database.models import Recipient, Event

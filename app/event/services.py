@@ -2,7 +2,7 @@
 from datetime import datetime, UTC
 from typing import List, Dict, Any, Optional, Union
 
-from flask import Markup
+from markupsafe import Markup
 
 from app.database import db
 from app.database.models import Event, Recipient
