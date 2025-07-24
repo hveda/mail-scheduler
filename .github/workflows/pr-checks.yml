@@ -50,7 +50,7 @@ jobs:
       
     - name: Check recipient model usage
       run: |
-        python -c "
+        python -c '
 import sys
 import ast
 import re
@@ -60,40 +60,40 @@ problems_found = False
 def check_file(file_path):
     global problems_found
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             file_content = f.read()
             
         # Simple pattern check for Recipient constructor with keyword args
-        if re.search(r'Recipient\(email_address=', file_content):
-            print(f'WARNING: Potential issue in {file_path}: Using email_address parameter in Recipient constructor')
+        if re.search(r"Recipient\(email_address=", file_content):
+            print(f"WARNING: Potential issue in {file_path}: Using email_address parameter in Recipient constructor")
             problems_found = True
             
         # Parse the file with AST to check more precisely
         try:
             tree = ast.parse(file_content)
             for node in ast.walk(tree):
-                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'Recipient':
-                    if any(kw.arg == 'email_address' for kw in node.keywords):
-                        print(f'ISSUE: In {file_path}: Using email_address parameter in Recipient constructor')
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Recipient":
+                    if any(kw.arg == "email_address" for kw in node.keywords):
+                        print(f"ISSUE: In {file_path}: Using email_address parameter in Recipient constructor")
                         problems_found = True
         except SyntaxError:
-            print(f'Could not parse {file_path} as Python code')
+            print(f"Could not parse {file_path} as Python code")
             
     except Exception as e:
-        print(f'Error checking {file_path}: {e}')
+        print(f"Error checking {file_path}: {e}")
 
 # Check main files where Recipient might be used
-check_file('app/event/jobs.py')
-check_file('app/event/services.py')
-check_file('app/event/views.py')
+check_file("app/event/jobs.py")
+check_file("app/event/services.py")
+check_file("app/event/views.py")
 
 if problems_found:
-    print('Issues found in Recipient usage!')
+    print("Issues found in Recipient usage!")
     sys.exit(1)
 else:
-    print('No issues found in Recipient usage!')
+    print("No issues found in Recipient usage!")
     sys.exit(0)
-        "
+        '
 
   compatibility-tests:
     runs-on: ubuntu-latest
